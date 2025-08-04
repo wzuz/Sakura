@@ -1,0 +1,32 @@
+
+[dungeons]
+
+	[dungeons.hud]
+		masks_timer = true
+
+	[dungeons.dungeons]
+		0s_tactical_insertion_title = "§l§5T.A.C"
+		tactical_insertion_timer = true
+		0s_tactical_insertion_notification = false
+		revert_master_stars = false
+		blood_timer = true
+		rag_axe_reminder = true
+		golem_shoutout = true
+		hello_trigger = true
+		sinseeker_timer = true
+		watcher_movement_timer = true
+
+[extras]
+
+	[extras.extras]
+		dub = true
+		hi = false
+		meow = true
+		debug = false
+		hello_trigger = false
+
+[garden]
+
+	[garden.garden]
+		pest_cooldown_alert = true
+
