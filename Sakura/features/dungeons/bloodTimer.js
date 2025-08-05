@@ -24,45 +24,66 @@ register("chat", (message) => {
   bloodStartTicks = 0
 }).setCriteria("${message}")
 
-register('packetReceived', () => {
+register("packetReceived", () => {
   if (!config.bloodTimerEnabled || !isInDungeon()) return
   bloodStartTicks++
 }).setFilteredClass(S32PacketConfirmTransaction)
 
 register("chat", () => {
   if (!config.bloodTimerEnabled || !isInDungeon()) return
-  
-  let bloodMove = ((Math.floor((Date.now() - bloodStartTime)/10)/100) + 0.10).toFixed(2)
-  let bloodMoveTicks = (bloodStartTicks*0.05+0.1).toFixed(2)
-  let bloodMovePredictionTicks
-  let bloodMoveLag
 
-  bloodMoveLag = (bloodMove - bloodMoveTicks)
-    if (bloodMoveTicks >= 31 && bloodMoveTicks <= 33.99) bloodMovePredictionTicks = (36 + bloodMoveLag - 0.6).toFixed(2)
-    if (bloodMoveTicks >= 28 && bloodMoveTicks <= 30.99) bloodMovePredictionTicks = (33 + bloodMoveLag - 0.6).toFixed(2)
-    if (bloodMoveTicks >= 25 && bloodMoveTicks <= 27.99) bloodMovePredictionTicks = (30 + bloodMoveLag - 0.6).toFixed(2)
-    if (bloodMoveTicks >= 22 && bloodMoveTicks <= 24.99) bloodMovePredictionTicks = (27 + bloodMoveLag - 0.6).toFixed(2)
-    if (bloodMoveTicks >= 1 && bloodMoveTicks <= 21.99) bloodMovePredictionTicks = (24 + bloodMoveLag - 0.6).toFixed(2)
-    if (!bloodMovePredictionTicks) bloodMovePredictionTicks = "Invalid Prediction"
-  else predicted = "&5❀ &dSakura &5≫&f Invalid Blood Prediction"
-  ChatLib.chat(`&5❀ &dSakura &5≫&f The Watcher took &b${bloodMovePredictionTicks} &fseconds to move.`)
+  const bloodMove = ((Date.now() - bloodStartTime) / 1000 + 0.10)
+  const bloodMoveTicks = (bloodStartTicks * 0.05 + 0.10)
+
+  const drift = (bloodMove - bloodMoveTicks).toFixed(2)         // signed drift
+  const absDrift = Math.abs(drift)                              // for confidence scoring
+  let bloodMovePredictionTicks
+
+  // Prediction based on ticks
+  if (bloodMoveTicks >= 31 && bloodMoveTicks <= 33.99) bloodMovePredictionTicks = (36 + (drift - 0.6)).toFixed(2)
+  else if (bloodMoveTicks >= 28 && bloodMoveTicks <= 30.99) bloodMovePredictionTicks = (33 + (drift - 0.6)).toFixed(2)
+  else if (bloodMoveTicks >= 25 && bloodMoveTicks <= 27.99) bloodMovePredictionTicks = (30 + (drift - 0.6)).toFixed(2)
+  else if (bloodMoveTicks >= 22 && bloodMoveTicks <= 24.99) bloodMovePredictionTicks = (27 + (drift - 0.6)).toFixed(2)
+  else if (bloodMoveTicks >= 1 && bloodMoveTicks <= 21.99)  bloodMovePredictionTicks = (24 + (drift - 0.6)).toFixed(2)
+
+  if (!bloodMovePredictionTicks) {
+    bloodMovePredictionTicks = "Invalid Prediction"
+    ChatLib.chat(`&5❀ &dSakura &5≫&c Invalid Blood Prediction`)
+    return
+  }
+
+  // Color based on drift
+  let lagColor = "&a"
+  if (absDrift >= 0.5) lagColor = "&c"
+  else if (absDrift >= 0.2) lagColor = "&e"
+
+  const driftSign = (drift > 0 ? "+" : drift < 0 ? "−" : "") // +-symbol
+  const formattedDrift = `${lagColor}${driftSign}${Math.abs(drift)}s drift`
+
+  // Chat output
+  ChatLib.chat(`&5❀ &dSakura &5≫&f The Watcher took &b${bloodMovePredictionTicks} &fseconds to move &7(${formattedDrift}&7)`)
+
+  // Display overlay logic
   displayText = `&3${bloodMovePredictionTicks}`
   display = true
- setTimeout(() => {
+
+  setTimeout(() => {
     display = false
     displayText = `&cKill Mobs`
-    }, 1250)
+  }, 1250)
+
   setTimeout(() => {
     display = true
-    }, (parseFloat(((bloodMovePredictionTicks - bloodMoveTicks) * 1000) - 150).toFixed(2)))
+  }, (parseFloat(((bloodMovePredictionTicks - bloodMoveTicks) * 1000) - 150).toFixed(2)))
+
   setTimeout(() => {
     display = false
-    }, (parseFloat(((bloodMovePredictionTicks - bloodMoveTicks) * 1000) + 850).toFixed(2)))
+  }, (parseFloat(((bloodMovePredictionTicks - bloodMoveTicks) * 1000) + 850).toFixed(2)))
 }).setCriteria("[BOSS] The Watcher: Let's see how you can handle this.")
 
 register("renderOverlay", () => {
-	if (!display || !config.bloodTimerEnabled || !isInDungeon()) return
-	const scale = 3
-	Renderer.scale(scale)
-	Renderer.drawStringWithShadow(displayText, (Renderer.screen.getWidth() / scale - Renderer.getStringWidth(displayText)) / 2, Renderer.screen.getHeight() / scale / 2 - 15)
-});
+  if (!display || !config.bloodTimerEnabled || !isInDungeon()) return
+  const scale = 3
+  Renderer.scale(scale)
+  Renderer.drawStringWithShadow(displayText, (Renderer.screen.getWidth() / scale - Renderer.getStringWidth(displayText)) / 2, Renderer.screen.getHeight() / scale / 2 - 15)
+})
