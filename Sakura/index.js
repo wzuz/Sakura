@@ -2,7 +2,7 @@ import config from './config'
 
 register("command", () => {
     config.openGUI()
-}).setName("sk").setAliases("sakura")
+}).setName("sakura").setAliases("sk")
 
 import './features/dungeons/sinseeker'
 import './features/dungeons/tacTimer'
