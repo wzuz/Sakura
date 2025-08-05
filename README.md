@@ -34,4 +34,4 @@ A [ChatTriggers](https://chattriggers.com/) module for Hypixel Skyblock with stu
 4. Run `/ct reload`
 5. Run `/sakura` or `/sk` to open the GUI
 
-Instalation via `/ct import` will be implemented once more features are added (maybe).
+Installation via `/ct import` will be implemented once more features are added (maybe).
