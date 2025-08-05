@@ -1,8 +1,9 @@
 {
   "name": "§dSakura",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": "Chilee",
   "entry": "index.js",
   "requires": ["Vigilance", "PogData"],
   "description": "Bunch of dungeon timers and stuff I felt like adding"
 }
+
