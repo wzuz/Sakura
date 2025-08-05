@@ -54,7 +54,7 @@ register("step", () => {
         const name = entity.getName().removeFormatting();
         const uuid = entity.getUUID().toString();
 
-        if (name.startsWith("Woke Golem") && !awokenGolems.has(uuid)) {
+        if (name.includes("Woke Golem") && !awokenGolems.has(uuid)) {
             awokenGolems.add(uuid);
             if (!earlyWakeDetected && now - sadanIntroTime <= 9000) {
                 earlyWakeDetected = true;
