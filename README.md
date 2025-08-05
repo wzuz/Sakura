@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://github.com/YOUR_USERNAME/YOUR_REPO/releases" target="_blank">
-    <img alt="release" src="https://img.shields.io/github/v/release/YOUR_USERNAME/YOUR_REPO?color=4166f5&style=flat-square" />
+  <a href="https://github.com/wzuz/Sakura/releases" target="_blank">
+    <img alt="release" src="https://img.shields.io/github/v/release/wzuz/Sakura?color=4166f5&style=flat-square&include_prereleases" />
   </a>
 </p>
 
