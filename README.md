@@ -6,17 +6,18 @@
 
 # 🌸 Sakura
 
-A [ChatTriggers](https://chattrigger.com/) module for Hypixel Skyblock that adds QoL and experimental features I felt like coding.
+A [ChatTriggers](https://chattrigger.com/) module for Hypixel Skyblock with stuff I felt like coding.
 
 ## ✨ Features
 
 - Bonzo’s Mask, Spirit Mask, Phoenix cooldown HUD
-- Tactical Insertion Countdown
+- Tactical Insertion & Sinseeker Countdown
 - 0s Tactical Insertion Notification
 - Blood Timer +Drift
 - Rag Axe reminder for M5, M6, and M7
 - Golem Shoutout
 - AutoMeow
+- Dub
 - Pest Cooldown Ready Notification
 
 > Every feature falls under the "Legit" category, however, just as any mod this is use at your own risk.
@@ -28,4 +29,4 @@ A [ChatTriggers](https://chattrigger.com/) module for Hypixel Skyblock that adds
 3. Run `/ct reload`
 4. Run `/sakura` or `/sk` to open the GUI
 
-Instalation via `/ct import` will be implemented once more features are added.
+Instalation via `/ct import` will be implemented once more features are added (maybe).
