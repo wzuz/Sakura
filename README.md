@@ -4,7 +4,7 @@
   </a>
 </p>
 
-# Sakura
+# 🌸 Sakura
 
 A [ChatTriggers](https://chattrigger.com/) module for Hypixel Skyblock that adds QoL and experimental features I felt like coding.
 
@@ -24,7 +24,7 @@ A [ChatTriggers](https://chattrigger.com/) module for Hypixel Skyblock that adds
 ## 📦 Manual Installation
 
 1. Install [ChatTriggers](https://chattrigger.com/)
-2. Download the latest release and unzip it in your modules folder
+2. Download the latest release and extract it in your modules folder
 3. Run `/ct reload`
 4. Run `/sakura` or `/sk` to open the GUI
 
