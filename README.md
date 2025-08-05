@@ -6,7 +6,7 @@
 
 # 🌸 Sakura
 
-A [ChatTriggers](https://chattrigger.com/) module for Hypixel Skyblock with stuff I felt like coding.
+A [ChatTriggers](https://chattriggers.com/) module for Hypixel Skyblock with stuff I felt like coding.
 
 ## ✨ Features
 
