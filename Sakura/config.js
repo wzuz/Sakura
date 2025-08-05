@@ -11,7 +11,7 @@ import {
     @SliderProperty
 } from '../Vigilance/index';
 
-@Vigilant("Sakura", "§dSakura §8v0.0.4", {
+@Vigilant("Sakura", "§dSakura §8v0.0.6", {
   getCategoryComparator: () => (a, b) => {
     const categories = ["Dungeons", "Extras",]
     return categories.indexOf(a) - categories.indexOf(b)
@@ -56,7 +56,7 @@ class Config {
 
     @SwitchProperty({
         name: "Blood Timer",
-        description: "Displays how long The Watcher took to move and notifies you when to kill mobs for dialogue skip.\n§8by §cjg <3",
+        description: "Displays how long The Watcher took to move and notifies you when to kill mobs for dialogue skip.",
         category: "Dungeons",
         subcategory: "Dungeons"
     })
@@ -88,7 +88,7 @@ class Config {
 
     @ButtonProperty({
         name: "Move Mask Timer HUD",
-        description: "Click to move the HUD",
+        description: "Click to move the HUD (must be inside Dungeons).",
         category: "Dungeons",
         subcategory: "HUD",
         placeholder: "Move"
