@@ -11,7 +11,7 @@ import {
     @SliderProperty
 } from '../Vigilance/index';
 
-@Vigilant("Sakura", "§dSakura §8v0.0.6", {
+@Vigilant("Sakura", "§dSakura §8v0.0.7", {
   getCategoryComparator: () => (a, b) => {
     const categories = ["Dungeons", "Extras",]
     return categories.indexOf(a) - categories.indexOf(b)
@@ -62,6 +62,14 @@ class Config {
     })
     bloodTimerEnabled = false
 
+   @SwitchProperty({
+        name: "Announce Prince Kill",
+        description: "Announces Prince Kill in Party Chat.",
+        category: "Dungeons",
+        subcategory: "Dungeons"
+    })
+    announcePrince = false
+   
     @SwitchProperty({
         name: "Rag Axe Reminder",
         description: "Notifies you when to use Ragnarock in M5, M6 and M7.",
