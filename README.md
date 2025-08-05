@@ -17,6 +17,7 @@ A [ChatTriggers](https://chattriggers.com/) module for Hypixel Skyblock with stu
 - Tactical Insertion & Sinseeker Countdown
 - 0s Tactical Insertion Notification
 - Blood Timer +Drift
+- Announce Prince Kill
 - Rag Axe reminder for M5, M6, and M7
 - Golem Shoutout
 - AutoMeow
