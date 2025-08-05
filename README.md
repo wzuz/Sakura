@@ -2,6 +2,9 @@
   <a href="https://github.com/wzuz/Sakura/releases" target="_blank">
     <img alt="release" src="https://img.shields.io/github/v/release/wzuz/Sakura?color=4166f5&style=flat-square&include_prereleases" />
   </a>
+  <a href="https://github.com/wzuz/Sakura/blob/main/LICENSE" target="_blank">
+    <img alt="license" src="https://img.shields.io/github/license/wzuz/Sakura?color=4166f5&style=flat-square" />
+  </a>
 </p>
 
 # 🌸 Sakura
