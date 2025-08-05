@@ -1,7 +1,9 @@
 import config from './config'
+import { handleCommand } from "./features/utils/commands"
 
-register("command", () => {
-    config.openGUI()
+register("command", (...args) => {
+    const result = handleCommand(args)
+    if (result === "open_gui") config.openGUI()
 }).setName("sakura").setAliases("sk")
 
 import './features/dungeons/sinseeker'
