@@ -32,7 +32,7 @@ A [ChatTriggers](https://chattriggers.com/) module for Hypixel Skyblock with stu
 |--------|-------------|
 | `/sakura` or `/sk` | Opens the Sakura configuration GUI |
 | `/sk ping` | Displays your current ping |
-| `/sk rtca <username>` | Shows how many M7 runs the player needs to reach Class Average 50 (via soopy.dev) |
+| `/sk rtca <username>` | Shows how many M7 runs the player needs to reach Class Average 50 |
 | `/sk update` | Checks for the latest version of Sakura on GitHub |
 | `/sk help` | Displays the list of available commands |
 
