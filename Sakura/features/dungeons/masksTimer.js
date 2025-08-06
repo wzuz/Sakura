@@ -7,7 +7,7 @@ let bonzoCooldownEnd = 0
 let spiritCooldownEnd = 0
 let phoenixCooldownEnd = 0
 
-// Move HUD logic (like TerminalTracker)
+// Move HUD logic
 register("dragged", (dx, dy, x, y, bn) => {
     if (!config.maskHudMover.isOpen() || bn == 2) return
     data.masksTimerPos.x = x
