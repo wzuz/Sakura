@@ -66,7 +66,7 @@ export function handleCommand(args) {
                     ChatLib.chat("&5❀ &dSakura &5≫ &aYou are currently on the latest version.")
                 } else {
                     ChatLib.chat(`&5❀ &dSakura &5≫ &eA new version &b${latestVersion} &eis available!`)
-                    ChatLib.chat(`&7Click here: &b${htmlUrl}`)
+                    ChatLib.chat(`&aClick here:&b ${htmlUrl}`)
                 }
             }).catch(error => {
                 ChatLib.chat(`&5❀ &dSakura &5≫&c Update check failed: ${error}`)
