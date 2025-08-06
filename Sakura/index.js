@@ -1,4 +1,5 @@
 import config from './config'
+import { checkForUpdate } from "./features/utils/utils"
 import { handleCommand } from "./features/utils/commands"
 
 register("command", (...args) => {
@@ -18,3 +19,9 @@ import './features/extras/helloChat'
 import './features/extras/meow'
 import './features/garden/pestCooldown'
 import './features/extras/dub'
+
+register("worldLoad", () => {
+    setTimeout(() => {
+        checkForUpdate(true)
+    }, 3000)
+})
