@@ -96,7 +96,7 @@ class Config {
 
     @SwitchProperty({
         name: "Masks Timer",
-        description: "Displays cooldowns for Bonzo's Mask, Spirit Mask, and Phoenix Pet. §c(WIP)",
+        description: "Displays cooldowns for Bonzo's Mask, Spirit Mask, and Phoenix Pet.",
         category: "Dungeons",
         subcategory: "HUD"
     })
@@ -120,14 +120,6 @@ class Config {
         subcategory: "Garden"
     })
     pestCooldownAlert = false
-
-    @SwitchProperty({
-        name: "Debug",
-        description: "Just to test this thing is working",
-        category: "Extras",
-        subcategory: "Extras"
-    })
-    helloTrigger = false
 
     @SwitchProperty({
         name: "Meow",
