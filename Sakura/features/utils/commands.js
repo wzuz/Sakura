@@ -76,10 +76,10 @@ export function handleCommand(args) {
 
         case "help":
             ChatLib.chat("&5❀ &dSakura &5≫ &7Available Commands:")
-            ChatLib.chat("&b/sk &7- Open the Sakura GUI")
-            ChatLib.chat("&b/sk ping &7- Check your current ping")
-            ChatLib.chat("&b/sk rtca <username> &7- Check M7 runs left till Class Average 50")
-            ChatLib.chat("&b/sk update &7- Check for updates")
+            ChatLib.chat("&b/sk &7- Opens the Sakura GUI")
+            ChatLib.chat("&b/sk ping &7- Displays your current ping")
+            ChatLib.chat("&b/sk rtca <username> &7- Shows number of M7 runs left till Class Average 50")
+            ChatLib.chat("&b/sk update &7- Checks for the latest version of Sakura on GitHub")
             ChatLib.chat("&b/sk help &7- Shows this help message")
             break
 
