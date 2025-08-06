@@ -27,7 +27,7 @@ export function handleCommand(args) {
                 method: "GET",
                 text: true
             }).then(raw => {
-                ChatLib.chat(`&5❀ &dSakura &5≫ &f${raw}.`)
+                ChatLib.chat(`&5❀ &dSakura &5≫ &f${raw}`)
             }).catch(error => {
                 ChatLib.chat(`&5❀ &dSakura &5≫&c Request error: ${error}`)
             })
