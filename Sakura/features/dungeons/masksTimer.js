@@ -7,7 +7,7 @@ let bonzoCooldownEnd = 0
 let spiritCooldownEnd = 0
 let phoenixCooldownEnd = 0
 
-// Move HUD logic
+// Move HUD logic (like TerminalTracker)
 register("dragged", (dx, dy, x, y, bn) => {
     if (!config.maskHudMover.isOpen() || bn == 2) return
     data.masksTimerPos.x = x
@@ -15,12 +15,13 @@ register("dragged", (dx, dy, x, y, bn) => {
     data.save()
 })
 
-//register("scrolled", (x, y, dir) => {
-//    if (!config.maskHudMover.isOpen()) return
-//   if (dir == 1) data.masksTimerPos.scale += 0.05
-//    else data.masksTimerPos.scale -= 0.05
-//    data.save()
-//})
+register("scrolled", (x, y, dir) => {
+    if (!config.maskHudMover.isOpen()) return
+    if (dir == 1) data.masksTimerPos.scale += 0.05
+    else data.masksTimerPos.scale -= 0.05
+    scale = data.masksTimerPos.scale
+    data.save() 
+})
 
 register("guiMouseClick", (x, y, bn) => {
     if (!config.maskHudMover.isOpen() || bn != 2) return
@@ -49,40 +50,45 @@ register("chat", (event) => {
     }
 })
 
+
 // Render HUDS
 register("renderOverlay", () => {
     if (!config.masksTimerEnabled || !isInDungeon()) return
 
-    const { x, y, scale } = data.masksTimerPos
-    Renderer.scale(scale)
+    let { x, y, scale } = data.masksTimerPos
 
-    // Draw background if moving
-    if (config.maskHudMover.isOpen()) {
-        Renderer.drawRect(Renderer.GRAY, x / scale - 2, y / scale - 2, 124, 34)
-    }
+    const now = Date.now()
+    const spiritRemaining = spiritCooldownEnd - now
+    const bonzoRemaining = bonzoCooldownEnd - now
+    const phoenixRemaining = phoenixCooldownEnd - now
 
-    // Bonzo
-    const bonzoRemaining = bonzoCooldownEnd - Date.now()
-    const bonzoText = bonzoRemaining > 0
-        ? `§9Bonzo: §e${Math.ceil(bonzoRemaining / 1000)}s`
-        : `§9Bonzo: §aReady`
-    Renderer.drawStringWithShadow(bonzoText, x / scale, y / scale)
-
-    // Spirit
-    const spiritRemaining = spiritCooldownEnd - Date.now()
     const spiritText = spiritRemaining > 0
         ? `§bSpirit: §e${Math.ceil(spiritRemaining / 1000)}s`
         : `§bSpirit: §aReady`
-    Renderer.drawStringWithShadow(spiritText, x / scale, y / scale + 10)
-
-    // Phoenix
-    const phoenixRemaining = phoenixCooldownEnd - Date.now()
+    const bonzoText = bonzoRemaining > 0
+        ? `§9Bonzo: §e${Math.ceil(bonzoRemaining / 1000)}s`
+        : `§9Bonzo: §aReady`
     const phoenixText = phoenixRemaining > 0
         ? `§6Phoenix: §e${Math.ceil(phoenixRemaining / 1000)}s`
         : `§6Phoenix: §aReady`
-    Renderer.drawStringWithShadow(phoenixText, x / scale, y / scale + 20)
 
-    Renderer.scale(1)
+    let masksText = new Text("", 0, 0).setShadow(true).setAlign("left").setFormatted(true)
+    let drawString = 
+                    ` ${spiritText}\n` +
+                    ` ${bonzoText}\n` +
+                    ` ${phoenixText}\n` 
+
+    // rectangle box thingy
+    if (config.maskHudMover.isOpen()) {
+        Renderer.drawRect(Renderer.GRAY, x - 2, y - 2, 124 * scale, 34 * scale)
+        masksText.setString(drawString)
+        masksText.setScale(scale)
+        masksText.draw(x, y)
+    }
+    masksText.setString(drawString)
+    masksText.setScale(scale)
+    masksText.draw(x, y)
+
 })
 
-//Big thanks to Tanner and Lisa for help with gui <3
+// Big thanks to Lisa and Tanner for help with issues <3
