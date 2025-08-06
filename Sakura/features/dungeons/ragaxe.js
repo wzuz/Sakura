@@ -1,5 +1,5 @@
 import config from "../../config";
-import { isInDungeon } from "../utils/utils";
+import { isInDungeon, isDpsClass } from "../utils/utils";
 
 let showTitleUntil = 0;
 
@@ -17,6 +17,7 @@ const showRagAxeNotification = (delay = 0) => {
 
 register("chat", (message, event) => {
     if (!config.ragaxenotif || !isInDungeon()) return;
+    if (config.ragondps && !isDpsClass()) return;
 
     const trimmedMessage = message.trim();
 
@@ -36,6 +37,7 @@ register("chat", (message, event) => {
 
 register("renderOverlay", () => {
     if (!config.ragaxenotif || !isInDungeon()) return;
+    if (config.ragondps && !isDpsClass()) return;
     if (Date.now() < showTitleUntil) {
         const scale = 7;
         const text = "§cRag Axe!";
