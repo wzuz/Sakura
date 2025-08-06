@@ -11,7 +11,7 @@ import {
     @SliderProperty
 } from '../Vigilance/index';
 
-@Vigilant("Sakura", "§dSakura §8v0.0.7", {
+@Vigilant("Sakura", "§dSakura §8v0.0.8", {
   getCategoryComparator: () => (a, b) => {
     const categories = ["Dungeons", "Extras",]
     return categories.indexOf(a) - categories.indexOf(b)
@@ -79,6 +79,14 @@ class Config {
     ragaxenotif = false
 
     @SwitchProperty({
+        name: "Only Show Rag On DPS",
+        description: "Only reminds you to use Ragnarock when playing Archer, Berserker, or Mage.",
+        category: "Dungeons",
+        subcategory: "Dungeons"
+    })
+    ragondps = true;
+
+    @SwitchProperty({
         name: "Golem Shoutout",
         description: "Gives a shoutout to whoever wakes up golems before terras in M6.",
         category: "Dungeons",
@@ -138,8 +146,9 @@ class Config {
     dub = false
 
     constructor() {
-    this.initialize(this);
-  }
+    this.initialize(this)
+    this.addDependency("Only Show Rag On DPS", "Rag Axe Reminder")
+    }
 }
 
 export default new Config()
