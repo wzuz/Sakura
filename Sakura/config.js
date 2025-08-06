@@ -80,7 +80,7 @@ class Config {
 
     @SwitchProperty({
         name: "Only Show Rag On DPS",
-        description: "Only reminds you to use Ragnarock when playing Archer, Berserker, or Mage.",
+        description: "Only renders Ragnarock Notification when playing Archer, Berserker, or Mage.",
         category: "Dungeons",
         subcategory: "Dungeons"
     })
@@ -144,3 +144,4 @@ class Config {
 }
 
 export default new Config()
+
