@@ -10,7 +10,7 @@ export function handleCommand(args) {
             return "open_gui"
 
          case "ping":
-            ChatLib.chat("&5❀ &dSakura &5≫&f This feature has not been enabled yet.")
+            ChatLib.chat("&5❀ &dSakura &5≫&f This feature is currently disabled.")
             break
 
         case "rtca":
@@ -52,7 +52,7 @@ export function handleCommand(args) {
                     return
                 }
 
-                const latestVersion = data.tag_name || data.name
+                let latestVersion = data.tag_name || data.name
                 const htmlUrl = data.html_url || "https://github.com/wzuz/Sakura/releases"
 
                 if (!latestVersion) {
@@ -60,11 +60,13 @@ export function handleCommand(args) {
                     return
                 }
 
-                if (latestVersion === localVersion) {
+                const normalizedVersion = latestVersion.startsWith("v") ? latestVersion.substring(1) : latestVersion
+
+                if (normalizedVersion === localVersion) {
                     ChatLib.chat("&5❀ &dSakura &5≫ &aYou are currently on the latest version.")
                 } else {
                     ChatLib.chat(`&5❀ &dSakura &5≫ &eA new version &b${latestVersion} &eis available!`)
-                    ChatLib.chat(`&aClick here:&b ${htmlUrl}`)
+                    ChatLib.chat(`&7Click here: &b${htmlUrl}`)
                 }
             }).catch(error => {
                 ChatLib.chat(`&5❀ &dSakura &5≫&c Update check failed: ${error}`)
