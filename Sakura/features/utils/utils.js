@@ -5,9 +5,11 @@ export function isInDungeon() {
     } catch (e) { }
 }
 
+let cachedClass = null;
+
 export function getClass() {
-    const scoreboard = Scoreboard.getLines().map(line => line.getName().removeFormatting());
     const username = Player.getName();
+    const scoreboard = Scoreboard.getLines().map(line => line.getName().removeFormatting());
 
     for (const line of scoreboard) {
         if (line.includes(username)) {
@@ -19,12 +21,33 @@ export function getClass() {
         }
     }
 
-    return null;
+    const tabList = TabList.getNames().map(name => name.removeFormatting());
+
+    for (const line of tabList) {
+        if (line.includes(username)) {
+            let newClass = null;
+            if (line.includes("Archer")) newClass = "archer";
+            else if (line.includes("Berserk")) newClass = "berserker";
+            else if (line.includes("Mage")) newClass = "mage";
+            else if (line.includes("Healer")) newClass = "healer";
+            else if (line.includes("Tank")) newClass = "tank";
+
+            if (newClass) {
+                if (cachedClass !== newClass) {
+                    cachedClass = newClass;
+                    ChatLib.chat(`&7[Debug] Cached class as: ${cachedClass}`);
+                }
+                return cachedClass;
+            }
+        }
+    }
+
+    return cachedClass;
 }
 
 export function isDpsClass() {
-    const isClass = getClass();
-    return isClass === "archer" || isClass === "berserker" || isClass === "mage";
+    const playerClass = getClass();
+    return playerClass === "archer" || playerClass === "berserker" || playerClass === "mage";
 }
 
 //Check for updates
