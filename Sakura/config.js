@@ -84,7 +84,7 @@ class Config {
         category: "Dungeons",
         subcategory: "Dungeons"
     })
-    ragondps = true;
+    ragondps = false
 
     @SwitchProperty({
         name: "Golem Shoutout",
@@ -144,4 +144,3 @@ class Config {
 }
 
 export default new Config()
-
