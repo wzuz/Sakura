@@ -1,10 +1,58 @@
 //Functions
+
+// Is in dungeon
 export function isInDungeon() {
     try {
         return TabList?.getNames()?.some(a => a.removeFormatting() == 'Dungeon: Catacombs')
     } catch (e) { }
 }
 
+// Is in boss
+
+let inBossRoom = false;
+
+const bossEntryRegexes = [
+    /^\[BOSS\] Bonzo: Gratz for making it this far, but I'm basically unbeatable\.$/,
+    /^\[BOSS\] Scarf: This is where the journey ends for you, Adventurers\.$/,
+    /^\[BOSS\] The Professor: I was burdened with terrible news recently\.\.\.$/,
+    /^\[BOSS\] Thorn: Welcome Adventurers! I am Thorn, the Spirit! And host of the Vegan Trials!$/,
+    /^\[BOSS\] Livid: Welcome, you've arrived right on time. I am Livid, the Master of Shadows\.$/,
+    /^\[BOSS\] Sadan: So you made it all the way here... Now you wish to defy me\? Sadan?!$/,
+    /^\[BOSS\] Maxor: WELL! WELL! WELL! LOOK WHO'S HERE!$/
+];
+
+let bossEntryHandlers = [];
+
+function unregisterBossHandlers() {
+    bossEntryHandlers.forEach(h => {
+        try { h.unregister(); } catch (e) {}
+    });
+    bossEntryHandlers = [];
+}
+
+function registerBossHandlers() {
+    unregisterBossHandlers();
+    bossEntryHandlers = bossEntryRegexes.map(regex => {
+        const handler = register("chat", () => {
+            inBossRoom = true;
+            unregisterBossHandlers();
+        }).setCriteria(regex);
+        return handler;
+    });
+}
+
+registerBossHandlers();
+
+register("worldUnload", () => {
+    inBossRoom = false;
+    registerBossHandlers();
+});
+
+export function isInBoss() {
+    return inBossRoom;
+}
+
+// Classes
 let cachedClass = null;
 
 export function getClass() {
@@ -35,7 +83,6 @@ export function getClass() {
             if (newClass) {
                 if (cachedClass !== newClass) {
                     cachedClass = newClass;
-                    ChatLib.chat(`&7[Debug] Cached class as: ${cachedClass}`);
                 }
                 return cachedClass;
             }
