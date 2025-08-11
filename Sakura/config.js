@@ -87,6 +87,14 @@ class Config {
     ragondps = false
 
     @SwitchProperty({
+        name: "Livid Invincibility Timer",
+        description: "Shows a countdown until Livid can be damaged after starting boss.",
+        category: "Dungeons",
+        subcategory: "Dungeons"
+    })
+    lividTimer = false
+
+    @SwitchProperty({
         name: "Golem Shoutout",
         description: "Gives a shoutout to whoever wakes up golems before terras in M6.",
         category: "Dungeons",
