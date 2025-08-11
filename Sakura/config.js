@@ -102,6 +102,14 @@ class Config {
     })
     masksTimerEnabled = false
 
+    @SwitchProperty({
+        name: "Only show in Boss",
+        description: "Only render Masks Timer while in Boss.",
+        category: "Dungeons",
+        subcategory: "HUD"
+    })
+    masksTimerinBoss = false
+
     @ButtonProperty({
         name: "Move Mask Timer HUD",
         description: "Click to move the HUD (must be inside Dungeons).",
@@ -140,6 +148,7 @@ class Config {
     constructor() {
     this.initialize(this)
     this.addDependency("Only Show Rag On DPS", "Rag Axe Reminder")
+    this.addDependency("Only show in Boss","Masks Timer")
     }
 }
 
