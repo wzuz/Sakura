@@ -1,6 +1,6 @@
 import config from "../../config"
 import { data } from "../data"
-import { isInDungeon } from "../utils/utils"
+import { isInDungeon, isInBoss } from "../utils/utils"
 
 // Cooldowns
 let bonzoCooldownEnd = 0
@@ -54,6 +54,7 @@ register("chat", (event) => {
 // Render HUDS
 register("renderOverlay", () => {
     if (!config.masksTimerEnabled || !isInDungeon()) return
+    if (config.masksTimerinBoss && !isInBoss() && !config.maskHudMover.isOpen()) return
 
     let { x, y, scale } = data.masksTimerPos
 
