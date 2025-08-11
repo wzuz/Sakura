@@ -8,7 +8,6 @@ export function isInDungeon() {
 }
 
 // Is in boss
-
 let inBossRoom = false;
 
 const bossEntryRegexes = [
@@ -142,3 +141,14 @@ export function checkForUpdate(silent = false) {
         if (!silent) ChatLib.chat(`&5❀ &dSakura &5≫&c Update check failed: ${error}`)
     })
 }
+
+//Author
+const AUTHOR_NAME = JSON.parse(FileLib.read("Sakura", "metadata.json")).author
+
+register("chat", (whoRaw) => {
+    const who = whoRaw.removeFormatting().replace(/^\[[^\]]+\]\s*/, "")
+
+    if (who === AUTHOR_NAME) {
+        ChatLib.command(`pc :(`)
+    }
+}).setCriteria("${who} has left the party.")
