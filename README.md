@@ -19,6 +19,7 @@ A [ChatTriggers](https://chattriggers.com/) module for Hypixel Skyblock with stu
 - Blood Timer with drift & prediction accuracy
 - Announce Prince Kill
 - Rag Axe reminder for M5, M6, and M7
+- Livid invincibility tick timer
 - Golem Shoutout
 - AutoMeow
 - Dub
