@@ -13,13 +13,8 @@ export function handleCommand(args) {
             ChatLib.chat("&5❀ &dSakura &5≫&f This feature is currently disabled.")
             break
 
-        case "rtca":
-            if (!args[1]) {
-                ChatLib.chat("&cUsage: /sk rtca <username>")
-                break
-            }
-
-            const username = args[1]
+        case "rtca": 
+            const username = args[1] ? args[1] : Player.getName()
             const url = `https://soopy.dev/api/soopyv2/botcommand?m=rtca&u=${username}`
 
             request({
@@ -42,6 +37,7 @@ export function handleCommand(args) {
 
                     const formattedBreakdown = classBreakdown
                         .split(" | ")
+                        .filter(Boolean)
                         .map(part => {
                             const [num, cls] = part.split(" ")
                             switch (cls?.toLowerCase()) {
@@ -61,9 +57,9 @@ export function handleCommand(args) {
                         })
                         .join(" &8| ")
 
-                    ChatLib.chat(`&5❀ &dSakura &5≫ &fIt will take &b${runsNeeded} &fM7 runs for &d${playerName} &fto reach Class Average 50 &7(${formattedBreakdown}&7)`)
+                    ChatLib.chat(`&5❀ &dSakura &5≫ &fIt will take &b${runsNeeded} &fM7 runs for &d${playerName} &fto reach &2⚛ Class Average &650 &7(${formattedBreakdown}&7)`)
                 } else {
-                    ChatLib.chat(`&5❀ &dSakura &5≫ &f${raw}`)
+                    ChatLib.chat(`&5❀ &dSakura &5≫ &f(${username}) ${raw}`)
                 }
             }).catch(error => {
                 ChatLib.chat(`&5❀ &dSakura &5≫&c Request error: ${error}`)
