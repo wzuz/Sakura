@@ -1,7 +1,7 @@
 const { request } = require("requestV2")
 
 // ------------------------------
-// Shared helper for RTCA (formats both colored and plain)
+// Helpers
 // ------------------------------
 function handleRtca(username, sendFn, stripColors = false) {
     const url = `https://soopy.dev/api/soopyv2/botcommand?m=rtca&u=${username}`
@@ -20,11 +20,9 @@ function handleRtca(username, sendFn, stripColors = false) {
             const playerName = match[2]
             const classBreakdown = match[3]
 
-            // Already CA50
             if (runsNeeded === "0" && (!classBreakdown || classBreakdown.trim() === "")) {
                 out = `&5❀ &dSakura &5≫ &b${playerName} &fhas already reached &2⚛ Class Average &650`
             } else {
-                // Colorful breakdown (same style as /sk rtca)
                 const formattedBreakdown = classBreakdown
                     .split(" | ")
                     .filter(Boolean)
@@ -54,7 +52,6 @@ function handleRtca(username, sendFn, stripColors = false) {
         }
 
         if (stripColors) {
-            // Remove § and & color codes for Hypixel chat sends
             out = out.replace(/§.|&./g, "")
         }
 
@@ -84,7 +81,6 @@ export function handleCommand(args) {
 
         case "rtca": {
             const username = args[1] ? args[1] : Player.getName()
-            // Keep your /sk rtca output EXACTLY as you wrote it
             const url = `https://soopy.dev/api/soopyv2/botcommand?m=rtca&u=${username}`
 
             request({
@@ -192,38 +188,36 @@ export function handleCommand(args) {
 }
 
 // ------------------------------
-// Chat commands (!rtca) — Party / PM / Guild
+// Chat commands (!<command>)
 // ------------------------------
 
-// Party chat: "Party > ${player}: ${message}"
+// !rtca (Party, Guild, From msg)
 register("chat", (player, message) => {
     const match = message.match(/^!rtca(?:\s+(\w+))?$/i)
     if (match) {
         const cleanPlayer = player.replace(/(\[[^\]]+\]\s*)/g, "").trim()
         const username = match[1] ? match[1] : cleanPlayer
         const partySend = msg => ChatLib.command(`pc ${msg}`)
-        handleRtca(username, partySend, true) // strip colors for party
+        handleRtca(username, partySend, true)
     }
 }).setChatCriteria("Party > ${player}: ${message}").setParameter("contains")
 
-// Private messages: "From ${player}: ${message}"
 register("chat", (player, message) => {
     const match = message.match(/^!rtca(?:\s+(\w+))?$/i)
     if (match) {
         const cleanPlayer = player.replace(/(\[[^\]]+\]\s*)/g, "").trim()
         const username = match[1] ? match[1] : cleanPlayer
         const msgSend = msg => ChatLib.command(`msg ${cleanPlayer} ${msg}`)
-        handleRtca(username, msgSend, true) // strip colors for PM
+        handleRtca(username, msgSend, true)
     }
 }).setChatCriteria("From ${player}: ${message}").setParameter("contains")
 
-// Guild chat: "Guild > ${player}: ${message}"
 register("chat", (player, message) => {
     const match = message.match(/^!rtca(?:\s+(\w+))?$/i)
     if (match) {
         const cleanPlayer = player.replace(/(\[[^\]]+\]\s*)/g, "").trim()
         const username = match[1] ? match[1] : cleanPlayer
         const guildSend = msg => ChatLib.command(`gc ${msg}`)
-        handleRtca(username, guildSend, true) // strip colors for guild
+        handleRtca(username, guildSend, true)
     }
 }).setChatCriteria("Guild > ${player}: ${message}").setParameter("contains")
