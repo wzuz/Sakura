@@ -1,7 +1,9 @@
 const { request } = require("requestV2")
-const Party = Java.type("gg.essential.api.commands.PartyCommandAPI")
-// Utility function to handle rtca logic and output
-function handleRtca(username, sendFn) {
+
+// ------------------------------
+// Shared helper for RTCA (formats both colored and plain)
+// ------------------------------
+function handleRtca(username, sendFn, stripColors = false) {
     const url = `https://soopy.dev/api/soopyv2/botcommand?m=rtca&u=${username}`
 
     request({
@@ -12,42 +14,61 @@ function handleRtca(username, sendFn) {
         const regex = /It will take ([\d,]+) m7 runs for (\w+) to reach class average 50 \((.*)\)/i
         const match = raw.match(regex)
 
+        let out
         if (match) {
             const runsNeeded = match[1]
             const playerName = match[2]
             const classBreakdown = match[3]
 
+            // Already CA50
             if (runsNeeded === "0" && (!classBreakdown || classBreakdown.trim() === "")) {
-                let msg = `❀ Sakura ≫ ${playerName} has already reached Class Average 50`
-                if (sendFn.isParty) msg = msg.replace(/§.|&./g, "")
-                sendFn(msg)
-                return
+                out = `&5❀ &dSakura &5≫ &b${playerName} &fhas already reached &2⚛ Class Average &650`
+            } else {
+                // Colorful breakdown (same style as /sk rtca)
+                const formattedBreakdown = classBreakdown
+                    .split(" | ")
+                    .filter(Boolean)
+                    .map(part => {
+                        const [num, cls] = part.split(" ")
+                        switch (cls?.toLowerCase()) {
+                            case "tank":
+                                return `&7❈ ${cls.charAt(0).toUpperCase() + cls.slice(1)} &7${num}`
+                            case "mage":
+                                return `&b✎ ${cls.charAt(0).toUpperCase() + cls.slice(1)} &7${num}`
+                            case "healer":
+                                return `&a❤ ${cls.charAt(0).toUpperCase() + cls.slice(1)} &7${num}`
+                            case "berserk":
+                                return `&c⚔ ${cls.charAt(0).toUpperCase() + cls.slice(1)} &7${num}`
+                            case "archer":
+                                return `&6☣ ${cls.charAt(0).toUpperCase() + cls.slice(1)} &7${num}`
+                            default:
+                                return `${cls} ${num}`
+                        }
+                    })
+                    .join(" &8| ")
+
+                out = `&5❀ &dSakura &5≫ &fIt will take &b${runsNeeded} &fM7 runs for &d${playerName} &fto reach &2⚛ Class Average &650 &7(${formattedBreakdown}&7)`
             }
-
-            const formattedBreakdown = classBreakdown
-                .split(" | ")
-                .filter(Boolean)
-                .map(part => {
-                    const [num, cls] = part.split(" ")
-                    return `${cls.charAt(0).toUpperCase() + cls.slice(1)} ${num}`
-                })
-                .join(" | ")
-
-            let msg = `❀ Sakura ≫ It will take ${runsNeeded} M7 runs for ${playerName} to reach Class Average 50 (${formattedBreakdown})`
-            if (sendFn.isParty) msg = msg.replace(/§.|&./g, "")
-            sendFn(msg)
         } else {
-            let msg = `❀ Sakura ≫ (${username}) ${raw}`
-            if (sendFn.isParty) msg = msg.replace(/§.|&./g, "")
-            sendFn(msg)
+            out = `&5❀ &dSakura &5≫ &f(${username}) ${raw}`
         }
+
+        if (stripColors) {
+            // Remove § and & color codes for Hypixel chat sends
+            out = out.replace(/§.|&./g, "")
+        }
+
+        sendFn(out)
     }).catch(error => {
-        let msg = `❀ Sakura ≫ Request error: ${error}`
-        if (sendFn.isParty) msg = msg.replace(/§.|&./g, "")
+        let msg = `&5❀ &dSakura &5≫&c Request error: ${error}`
+        if (stripColors) msg = msg.replace(/§.|&./g, "")
         sendFn(msg)
     })
 }
 
+// ------------------------------
+// /sakura or /sk commands
+// ------------------------------
 export function handleCommand(args) {
     const command = args[0]?.toLowerCase()
 
@@ -61,12 +82,62 @@ export function handleCommand(args) {
             ChatLib.chat("&5❀ &dSakura &5≫&f This feature is currently disabled.")
             break
 
-        case "rtca":
+        case "rtca": {
             const username = args[1] ? args[1] : Player.getName()
-            handleRtca(username, ChatLib.chat)
-            break
+            // Keep your /sk rtca output EXACTLY as you wrote it
+            const url = `https://soopy.dev/api/soopyv2/botcommand?m=rtca&u=${username}`
 
-        case "update":
+            request({
+                url: url,
+                method: "GET",
+                text: true
+            }).then(raw => {
+                const regex = /It will take ([\d,]+) m7 runs for (\w+) to reach class average 50 \((.*)\)/i
+                const match = raw.match(regex)
+
+                if (match) {
+                    const runsNeeded = match[1]
+                    const playerName = match[2]
+                    const classBreakdown = match[3]
+
+                    if (runsNeeded === "0" && (!classBreakdown || classBreakdown.trim() === "")) {
+                        ChatLib.chat(`&5❀ &dSakura &5≫ &b${playerName} &fhas already reached &2⚛ Class Average &650`)
+                        return
+                    }
+
+                    const formattedBreakdown = classBreakdown
+                        .split(" | ")
+                        .filter(Boolean)
+                        .map(part => {
+                            const [num, cls] = part.split(" ")
+                            switch (cls?.toLowerCase()) {
+                                case "tank":
+                                    return `&7❈ ${cls.charAt(0).toUpperCase() + cls.slice(1)} &7${num}`
+                                case "mage":
+                                    return `&b✎ ${cls.charAt(0).toUpperCase() + cls.slice(1)} &7${num}`
+                                case "healer":
+                                    return `&a❤ ${cls.charAt(0).toUpperCase() + cls.slice(1)} &7${num}`
+                                case "berserk":
+                                    return `&c⚔ ${cls.charAt(0).toUpperCase() + cls.slice(1)} &7${num}`
+                                case "archer":
+                                    return `&6☣ ${cls.charAt(0).toUpperCase() + cls.slice(1)} &7${num}`
+                                default:
+                                    return `${cls} ${num}`
+                            }
+                        })
+                        .join(" &8| ")
+
+                    ChatLib.chat(`&5❀ &dSakura &5≫ &fIt will take &b${runsNeeded} &fM7 runs for &d${playerName} &fto reach &2⚛ Class Average &650 &7(${formattedBreakdown}&7)`)
+                } else {
+                    ChatLib.chat(`&5❀ &dSakura &5≫ &f(${username}) ${raw}`)
+                }
+            }).catch(error => {
+                ChatLib.chat(`&5❀ &dSakura &5≫&c Request error: ${error}`)
+            })
+            break
+        }
+
+        case "update": {
             const localVersion = JSON.parse(FileLib.read("Sakura", "metadata.json")).version
             const githubApi = "https://api.github.com/repos/wzuz/Sakura/releases/latest"
 
@@ -103,8 +174,8 @@ export function handleCommand(args) {
             }).catch(error => {
                 ChatLib.chat(`&5❀ &dSakura &5≫&c Update check failed: ${error}`)
             })
-
             break
+        }
 
         case "help":
             ChatLib.chat("&5❀ &dSakura &5≫ &7Available Commands:")
@@ -120,37 +191,39 @@ export function handleCommand(args) {
     }
 }
 
+// ------------------------------
+// Chat commands (!rtca) — Party / PM / Guild
+// ------------------------------
 
+// Party chat: "Party > ${player}: ${message}"
 register("chat", (player, message) => {
     const match = message.match(/^!rtca(?:\s+(\w+))?$/i)
     if (match) {
         const cleanPlayer = player.replace(/(\[[^\]]+\]\s*)/g, "").trim()
         const username = match[1] ? match[1] : cleanPlayer
         const partySend = msg => ChatLib.command(`pc ${msg}`)
-        partySend.isParty = true
-        handleRtca(username, partySend)
+        handleRtca(username, partySend, true) // strip colors for party
     }
 }).setChatCriteria("Party > ${player}: ${message}").setParameter("contains")
 
-
+// Private messages: "From ${player}: ${message}"
 register("chat", (player, message) => {
     const match = message.match(/^!rtca(?:\s+(\w+))?$/i)
     if (match) {
         const cleanPlayer = player.replace(/(\[[^\]]+\]\s*)/g, "").trim()
         const username = match[1] ? match[1] : cleanPlayer
         const msgSend = msg => ChatLib.command(`msg ${cleanPlayer} ${msg}`)
-        msgSend.isParty = true 
-        handleRtca(username, msgSend)
+        handleRtca(username, msgSend, true) // strip colors for PM
     }
 }).setChatCriteria("From ${player}: ${message}").setParameter("contains")
 
+// Guild chat: "Guild > ${player}: ${message}"
 register("chat", (player, message) => {
     const match = message.match(/^!rtca(?:\s+(\w+))?$/i)
     if (match) {
         const cleanPlayer = player.replace(/(\[[^\]]+\]\s*)/g, "").trim()
         const username = match[1] ? match[1] : cleanPlayer
         const guildSend = msg => ChatLib.command(`gc ${msg}`)
-        guildSend.isParty = true 
-        handleRtca(username, guildSend)
+        handleRtca(username, guildSend, true) // strip colors for guild
     }
 }).setChatCriteria("Guild > ${player}: ${message}").setParameter("contains")
