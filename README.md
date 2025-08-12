@@ -41,7 +41,7 @@ A [ChatTriggers](https://chattriggers.com/) module for Hypixel Skyblock with stu
 
 1. Install [ChatTriggers](https://chattriggers.com/)
 2. Install `Vigilance` `requestV2` and `PogData` via `/ct import vigilance` `/ct import requestv2` and `/ct import pogdata`. Alternatively check `/ct modules` to see if they are already installed.
-3. Download the latest [release](https://github.com/wzuz/Sakura/releases) and extract it into your `ChatTriggers/modules/` folder
+3. Download the latest [release](https://github.com/wzuz/Sakura/releases/latest) and extract it into your `ChatTriggers/modules/` folder
 4. Run `/ct reload`
 5. Use `/sakura` or `/sk` to open the mod GUI
 
