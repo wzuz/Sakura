@@ -138,6 +138,14 @@ class Config {
     pestCooldownAlert = false
 
     @SwitchProperty({
+        name: "Allow !rtca",
+        description: "Enable the usage of !rtca in Party, Guild, and messages.",
+        category: "Extras",
+        subcategory: "Extras"
+    })
+    chatCommands = false
+
+    @SwitchProperty({
         name: "Meow",
         description: "= ＾● ⋏ ●＾ =",
         category: "Extras",
@@ -161,4 +169,3 @@ class Config {
 }
 
 export default new Config()
-
