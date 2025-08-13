@@ -23,7 +23,7 @@ class Config {
 
    @SwitchProperty({
         name: "Sinseeker Timer",
-        description: "Shows a 1 second countdown after teleporting with Sinseeker.\n§8by JohnCraftsYT",
+        description: "Shows a 1 second countdown after teleporting with Sinseeker.",
         category: "Dungeons",
         subcategory: "Dungeons"
     })
