@@ -1,3 +1,4 @@
+import config from "../../config"
 const { request } = require("requestV2")
 
 // ------------------------------
@@ -193,31 +194,31 @@ export function handleCommand(args) {
 
 // !rtca (Party, Guild, From msg)
 register("chat", (player, message) => {
+    if (!config.chatCommands) return
     const match = message.match(/^!rtca(?:\s+(\w+))?$/i)
-    if (match) {
-        const cleanPlayer = player.replace(/(\[[^\]]+\]\s*)/g, "").trim()
-        const username = match[1] ? match[1] : cleanPlayer
-        const partySend = msg => ChatLib.command(`pc ${msg}`)
-        handleRtca(username, partySend, true)
-    }
+    if (!match) return
+    const cleanPlayer = player.replace(/(\[[^\]]+\]\s*)/g, "").trim()
+    const username = match[1] ? match[1] : cleanPlayer
+    const partySend = msg => ChatLib.command(`pc ${msg}`)
+    handleRtca(username, partySend, true)
 }).setChatCriteria("Party > ${player}: ${message}").setParameter("contains")
 
 register("chat", (player, message) => {
+    if (!config.chatCommands) return
     const match = message.match(/^!rtca(?:\s+(\w+))?$/i)
-    if (match) {
-        const cleanPlayer = player.replace(/(\[[^\]]+\]\s*)/g, "").trim()
-        const username = match[1] ? match[1] : cleanPlayer
-        const msgSend = msg => ChatLib.command(`msg ${cleanPlayer} ${msg}`)
-        handleRtca(username, msgSend, true)
-    }
+    if (!match) return
+    const cleanPlayer = player.replace(/(\[[^\]]+\]\s*)/g, "").trim()
+    const username = match[1] ? match[1] : cleanPlayer
+    const msgSend = msg => ChatLib.command(`msg ${cleanPlayer} ${msg}`)
+    handleRtca(username, msgSend, true)
 }).setChatCriteria("From ${player}: ${message}").setParameter("contains")
 
 register("chat", (player, message) => {
+    if (!config.chatCommands) return
     const match = message.match(/^!rtca(?:\s+(\w+))?$/i)
-    if (match) {
-        const cleanPlayer = player.replace(/(\[[^\]]+\]\s*)/g, "").trim()
-        const username = match[1] ? match[1] : cleanPlayer
-        const guildSend = msg => ChatLib.command(`gc ${msg}`)
-        handleRtca(username, guildSend, true)
-    }
+    if (!match) return
+    const cleanPlayer = player.replace(/(\[[^\]]+\]\s*)/g, "").trim()
+    const username = match[1] ? match[1] : cleanPlayer
+    const guildSend = msg => ChatLib.command(`gc ${msg}`)
+    handleRtca(username, guildSend, true)
 }).setChatCriteria("Guild > ${player}: ${message}").setParameter("contains")
