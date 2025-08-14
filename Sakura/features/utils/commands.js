@@ -76,8 +76,51 @@ export function handleCommand(args) {
         case "settings":
             return "open_gui"
 
-        case "ping":
-            ChatLib.chat("&5❀ &dSakura &5≫&f This feature is currently disabled.")
+        case "ping": 
+            const C16PacketClientStatus = Java.type("net.minecraft.network.play.client.C16PacketClientStatus")
+            const EnumState = Java.type("net.minecraft.network.play.client.C16PacketClientStatus$EnumState")
+            const S37PacketStatistics = Java.type("net.minecraft.network.play.server.S37PacketStatistics")
+            const System = Java.type("java.lang.System")
+
+            if (typeof sakuraPingInFlight === "undefined") sakuraPingInFlight = false
+            if (typeof sakuraPingStartNano === "undefined") sakuraPingStartNano = 0
+            if (typeof sakuraPingListenerRegistered === "undefined") sakuraPingListenerRegistered = false
+
+            if (sakuraPingInFlight) {
+                ChatLib.chat("&5❀ &dSakura &5≫&e Already pinging. Patience is a virtue.")
+                break
+            }
+
+            if (!sakuraPingListenerRegistered) {
+                register("packetReceived", () => {
+                if (!sakuraPingInFlight) return
+                const deltaNs = System.nanoTime() - sakuraPingStartNano
+                sakuraPingInFlight = false
+
+                const rtt = deltaNs / 1e6
+                const rttStr = rtt.toFixed(2)
+                const color =
+                    rtt < 100 ? "&a" :
+                    rtt < 150 ? "&2" :
+                    rtt < 200 ? "&e" :
+                    rtt < 250 ? "&6" :
+                    rtt < 300 ? "&c" : "&4"
+
+                ChatLib.chat(`&5❀ &dSakura &5≫&r ${color}${rttStr}&7ms`)
+                }).setFilteredClass(S37PacketStatistics)
+                sakuraPingListenerRegistered = true
+            }
+
+            try {
+                const netHandler = Client.getMinecraft().func_147114_u()
+                sakuraPingInFlight = true
+                sakuraPingStartNano = System.nanoTime()
+                const pkt = new C16PacketClientStatus(EnumState.REQUEST_STATS)
+                netHandler.func_147297_a(pkt)
+            } catch (e) {
+                sakuraPingInFlight = false
+                ChatLib.chat(`&5❀ &dSakura &5≫&c Ping check failed: ${e}`)
+            }
             break
 
         case "rtca": {
