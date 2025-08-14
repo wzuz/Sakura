@@ -2,13 +2,13 @@ import config from "../../config";
 import { isInDungeon } from "../utils/utils";
 
 const SADAN_GOLEM_MESSAGES = [
-    "[BOSS] Sadan: Interesting strategy, waking up my Golems. Or was that unintentional, (player)?",
-    "[BOSS] Sadan: You weren't supposed to wake up that Golem, (player)!",
-    "[BOSS] Sadan: My Terracotta Army wasn't enough? You had to awaken a Golem on top, (player)?!",
-    "[BOSS] Sadan: Those Golems will be your undoing, (player)!",
-    "[BOSS] Sadan: How many more of my Golems will you disturb, (player)?",
-    "[BOSS] Sadan: Reckless humans! You should know by now my Golems do not want to be awoken, (player)!",
-    "[BOSS] Sadan: All my Golems want is some peace and quiet! Can you not, (player)?!"
+    /^\[BOSS\] Sadan: Interesting strategy, waking up my Golems\. Or was that unintentional, ([A-Za-z0-9_]+)\?$/,
+    /^\[BOSS\] Sadan: You weren't supposed to wake up that Golem, ([A-Za-z0-9_]+)!$/,
+    /^\[BOSS\] Sadan: My Terracotta Army wasn't enough\? You had to awaken a Golem on top, ([A-Za-z0-9_]+)\?!$/,
+    /^\[BOSS\] Sadan: Those Golems will be your undoing, ([A-Za-z0-9_]+)!$/,
+    /^\[BOSS\] Sadan: How many more of my Golems will you disturb, ([A-Za-z0-9_]+)\?$/,
+    /^\[BOSS\] Sadan: Reckless humans! You should know by now my Golems do not want to be awoken, ([A-Za-z0-9_]+)!$/,
+    /^\[BOSS\] Sadan: All my Golems want is some peace and quiet! Can you not, ([A-Za-z0-9_]+)\?!$/
 ];
 
 const awokenGolems = new Set();
@@ -45,7 +45,7 @@ register("step", () => {
 
     const now = Date.now();
 
-    if (!earlyWakeDetected && now - sadanIntroTime > 9000) {
+    if (!earlyWakeDetected && now - sadanIntroTime > 10800) {
         trackingEnabled = false;
         return;
     }
@@ -56,7 +56,7 @@ register("step", () => {
 
         if (name.includes("Woke Golem") && !awokenGolems.has(uuid)) {
             awokenGolems.add(uuid);
-            if (!earlyWakeDetected && now - sadanIntroTime <= 9000) {
+            if (!earlyWakeDetected && now - sadanIntroTime <= 10800) {
                 earlyWakeDetected = true;
             }
         }
@@ -79,20 +79,15 @@ register("chat", (message, event) => {
 
     const trimmedMessage = message.trim();
 
-    for (const msg of SADAN_GOLEM_MESSAGES) {
-        const prefix = msg.split("(player)")[0];
-        if (trimmedMessage.startsWith(prefix)) {
-            const playerName = trimmedMessage
-                .substring(prefix.length)
-                .replace(/[^a-zA-Z0-9_]/g, "")
-                .trim();
-
+    for (const regex of SADAN_GOLEM_MESSAGES) {
+        const match = trimmedMessage.match(regex);
+        if (match) {
+            const playerName = match[1];
             if (playerName && earlyWakeDetected && trackingEnabled) {
                 setTimeout(() => {
                     ChatLib.command(`pc Shoutout to ${playerName} for waking up a golem early.`);
                 }, 500);
             }
-
             break;
         }
     }
