@@ -75,5 +75,10 @@
    ```sh
    /sakura or /sk
    ```
+
+## 📜 License & Credits
+
+This project is licensed under the [MIT License](https://github.com/wzuz/Sakura/blob/main/LICENSE). I don't think this could've been possible without all of the open source projects in this community and the kind help from friends. Big thanks to ilurr, Tanner__502, AzuredBlue, odtheking and LegendaryJG.
+
 <h1 align="center"></h1>
 <p align="center">Made with ❤️ by Chilee</p>
