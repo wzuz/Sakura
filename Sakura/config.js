@@ -11,7 +11,7 @@ import {
     @SliderProperty
 } from '../Vigilance/index';
 
-@Vigilant("Sakura", "§dSakura §8v0.0.10", {
+@Vigilant("Sakura", "§dSakura §8v1.0.0", {
   getCategoryComparator: () => (a, b) => {
     const categories = ["Dungeons", "Extras",]
     return categories.indexOf(a) - categories.indexOf(b)
