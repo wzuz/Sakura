@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/wzuz/Sakura/blob/1.0.0/assets/Sakura.png?raw=true" width="400" alt="Sakura logo">
+  <img src="https://github.com/wzuz/Sakura/blob/main/assets/Sakura.png?raw=true" width="400" alt="Sakura logo">
 <h1 align="center"></h1>
 <p align="center">
   A <a href="https://chattriggers.com/">ChatTriggers</a> module for Hypixel Skyblock with features I felt like<br>
