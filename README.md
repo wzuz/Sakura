@@ -1,15 +1,23 @@
 <p align="center">
+  <img src="https://github.com/wzuz/Sakura/blob/1.0.0/assets/Sakura.png?raw=true" width="400" alt="Sakura logo">
+<h1 align="center"></h1>
+<p align="center">
+  A <a href="https://chattriggers.com/">ChatTriggers</a> module for Hypixel Skyblock with features I felt like<br>
+  coding to hopefully enhance your dungeons and Skyblock experience.
+</p>
+  
+</p>
+<p align="center">
   <a href="https://github.com/wzuz/Sakura/releases" target="_blank">
-    <img alt="release" src="https://img.shields.io/github/v/release/wzuz/Sakura?color=4166f5&style=flat-square&include_prereleases" />
+    <img alt="release" src="https://img.shields.io/github/v/release/wzuz/Sakura?style=flat-square&color=E75480&include_prereleases&logo=github&logoColor=white" />
+  </a>
+  <a href="https://github.com/wzuz/Sakura" target="_blank">
+    <img alt="lines of code" src="https://tokei.rs/b1/github/wzuz/Sakura?style=flat-square&color=F06C9B" />
   </a>
   <a href="https://github.com/wzuz/Sakura/blob/main/LICENSE" target="_blank">
-    <img alt="license" src="https://img.shields.io/github/license/wzuz/Sakura?color=4166f5&style=flat-square" />
+    <img alt="license" src="https://img.shields.io/github/license/wzuz/Sakura?style=flat-square&color=F8A1B5&logoColor=black" />
   </a>
 </p>
-
-# 🌸 Sakura
-
-A [ChatTriggers](https://chattriggers.com/) module for Hypixel Skyblock with stuff I felt like coding.
 
 ## ✨ Features
 
@@ -24,8 +32,9 @@ A [ChatTriggers](https://chattriggers.com/) module for Hypixel Skyblock with stu
 - AutoMeow
 - Dub
 - Pest Cooldown Ready Notification
+- !rtca in Party, Guild, Messages
 
-> Every feature falls under the "Legit" category, however, just as any mod this is use at your own risk.
+> All features are *"Legit"* by design, but as with any mod, **everything is use at your own risk**.
 
 ## 🛠️ Commands
 
@@ -37,12 +46,39 @@ A [ChatTriggers](https://chattriggers.com/) module for Hypixel Skyblock with stu
 | `/sk update` | Checks for the latest version of Sakura on GitHub |
 | `/sk help` | Displays the list of available commands |
 
-## 📦 Manual Installation
+## 📦 Installation
 
-1. Install [ChatTriggers](https://chattriggers.com/)
-2. Install `Vigilance` `requestV2` and `PogData` via `/ct import vigilance` `/ct import requestv2` and `/ct import pogdata`. Alternatively check `/ct modules` to see if they are already installed.
-3. Download the latest [release](https://github.com/wzuz/Sakura/releases/latest) and extract it into your `ChatTriggers/modules/` folder
-4. Run `/ct reload`
-5. Use `/sakura` or `/sk` to open the mod GUI
+### Primary Installation (Recommended)
+1. Install [ChatTriggers](https://chattriggers.com/)  
+2. Run:  
+   ```sh
+   /ct import sakura
 
-Installation via `/ct import` will be implemented once more features are added (maybe).
+### Manual Installation
+1. Install [ChatTriggers](https://chattriggers.com/)  
+2. Install the required modules:
+   ```sh
+   /ct import vigilance
+   /ct import requestv2
+   /ct import pogdata
+   ```
+   *(Alternatively check `/ct modules` to see if they are already installed.)*  
+3. [Download the latest release](https://github.com/wzuz/Sakura/releases/latest) and extract it into:
+   ```
+   ChatTriggers/modules/
+   ```
+4. Reload ChatTriggers:
+   ```sh
+   /ct reload
+   ```
+5. Open Sakura:
+   ```sh
+   /sakura or /sk
+   ```
+
+## 📜 License & Credits
+
+This project is licensed under the [MIT License](https://github.com/wzuz/Sakura/blob/main/LICENSE). I don't think this could've been possible without all of the open source projects in this community and the kind help from friends. Big thanks to ilurr, Tanner__502, AzuredBlue, odtheking and LegendaryJG.
+
+<h1 align="center"></h1>
+<p align="center">Made with ❤️ by Chilee</p>

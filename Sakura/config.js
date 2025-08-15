@@ -23,7 +23,7 @@ class Config {
 
    @SwitchProperty({
         name: "Sinseeker Timer",
-        description: "Shows a 1 second countdown after teleporting with Sinseeker.\n§8by JohnCraftsYT",
+        description: "Shows a 1 second countdown after teleporting with Sinseeker.",
         category: "Dungeons",
         subcategory: "Dungeons"
     })
@@ -138,6 +138,14 @@ class Config {
     pestCooldownAlert = false
 
     @SwitchProperty({
+        name: "Allow !rtca",
+        description: "Enable the usage of !rtca in Party, Guild, and messages.",
+        category: "Extras",
+        subcategory: "Extras"
+    })
+    chatCommands = false
+
+    @SwitchProperty({
         name: "Meow",
         description: "= ＾● ⋏ ●＾ =",
         category: "Extras",
@@ -161,4 +169,3 @@ class Config {
 }
 
 export default new Config()
-
