@@ -106,9 +106,16 @@ register("chat", (message, event) => {
   const msg = message.trim();
   if (M6_BOSS_END_PARTIAL.test(msg)) {
     if (split_end < 0) split_end = tickCount;
-    const sadanStr = (split_sadan_start >= 0) ? fmtTicksDelta(split_sadan_start, split_end) : "—";
-    const totalStr = fmtTicksDelta(0, split_end);
-    ChatLib.chat(`&7[Debug] Boss end | Sadan: &f${sadanStr}s &7| Total: &f${totalStr}s`);
+
+    // compute all splits
+    const terracottasStr = fmtTicksDelta(split_t_start, split_giants_start >= 0 ? split_giants_start : (split_sadan_start >= 0 ? split_sadan_start : split_end));
+    const giantsStr      = (split_giants_start >= 0) ? fmtTicksDelta(split_giants_start, split_sadan_start >= 0 ? split_sadan_start : split_end) : (split_sadan_start >= 0 ? "0.00" : "—");
+    const sadanStr       = (split_sadan_start >= 0) ? fmtTicksDelta(split_sadan_start, split_end) : "—";
+    const totalStr       = fmtTicksDelta(0, split_end);
+
+    setTimeout(() => {
+      ChatLib.chat(`&5❀ &dSakura &5≫ &rTerracottas: &b${terracottasStr}s &r| Giants: &b${giantsStr}s &r| Sadan: &b${sadanStr}s &r| Total: &b${totalStr}s`);
+    }, 200);
 
     if (packetListener) {
       try { packetListener.unregister(); } catch (e) {}
@@ -144,10 +151,10 @@ register("renderOverlay", () => {
   const totalStr       = fmtTicksDelta(0, totalEnd);
 
   const lines = [
-    `§bTerracottas: §f${terracottasStr}s`,
-    `§9Giants: §f${giantsStr}s`,
+    `§6Terracottas: §f${terracottasStr}s`,
+    `§aGiants: §f${giantsStr}s`,
     `§cSadan: §f${sadanStr}s`,
-    `§6Total: §f${totalStr}s`
+    `§dTotal: §f${totalStr}s`
   ];
 
   const x = Renderer.screen.getWidth() / 2 - 70;
