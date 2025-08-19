@@ -20,6 +20,7 @@ import {
 class Config {
 
     maskHudMover = new Gui()
+    m6TimerHudMover = new Gui()
 
    @SwitchProperty({
         name: "Sinseeker Timer",
@@ -95,14 +96,6 @@ class Config {
     lividTimer = false
 
     @SwitchProperty({
-        name: "Golem Shoutout",
-        description: "Gives a shoutout to whoever wakes up golems before terras in M6.",
-        category: "Dungeons",
-        subcategory: "Dungeons"
-    })
-    golemShoutout = false
-
-    @SwitchProperty({
         name: "Masks Timer",
         description: "Displays cooldowns for Bonzo's Mask, Spirit Mask, and Phoenix Pet.",
         category: "Dungeons",
@@ -127,6 +120,33 @@ class Config {
     })
     MoveMaskHud() {
         this.maskHudMover.open()
+    }
+
+    @SwitchProperty({
+        name: "Golem Shoutout",
+        description: "Gives a shoutout to whoever wakes up golems before terras in M6.",
+        category: "Dungeons",
+        subcategory: "Sadan"
+    })
+    golemShoutout = false
+
+    @SwitchProperty({
+        name: "Sadan Splits",
+        description: "Displays a HUD with Sadan splits for every phase in F6/M6 bossfight.",
+        category: "Dungeons",
+        subcategory: "Sadan"
+    })
+    m6Timer = false
+
+    @ButtonProperty({
+        name: "Move Sadan Splits HUD",
+        description: "Click to move the HUD (must be inside F6/M6 Boss).",
+        category: "Dungeons",
+        subcategory: "Sadan",
+        placeholder: "Move"
+    })
+    Movem6TimerHud() {
+        this.m6TimerHudMover.open()
     }
 
     @SwitchProperty({
