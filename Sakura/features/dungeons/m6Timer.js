@@ -1,4 +1,5 @@
 import config from "../../config"
+import { data } from "../data"
 
 // ================= Triggers (regex) =================
 const M6_INTRO_REGEX = /^\[BOSS\] Sadan: So you made it all the way here\.\.\. Now you wish to defy me\? Sadan\?!$/;
@@ -16,6 +17,29 @@ let split_t_start = -1;      // Terracottas start (0)
 let split_giants_start = -1; // Giants start
 let split_sadan_start = -1;  // Sadan start
 let split_end = -1;          // End (for Total)
+
+// GUI moving stuff
+register("dragged", (dx, dy, x, y, bn) => {
+    if (!config.m6TimerHudMover.isOpen() || bn == 2) return
+    data.m6Timer.x = x
+    data.m6Timer.y = y
+    data.save()
+})
+
+register("scrolled", (x, y, dir) => {
+    if (!config.m6TimerHudMover.isOpen()) return
+    if (dir == 1) data.m6Timer.scale += 0.05
+    else data.m6Timer.scale -= 0.05
+    data.save()
+})
+
+register("guiMouseClick", (x, y, bn) => {
+    if (!config.m6TimerHudMover.isOpen() || bn != 2) return
+    data.m6Timer.x = Renderer.screen.getWidth() / 2
+    data.m6Timer.y = Renderer.screen.getHeight() / 2 + 10
+    data.m6Timer.scale = 1
+    data.save()
+})
 
 // ================= Helpers =================
 function resetAll() {
@@ -138,6 +162,7 @@ register("worldUnload", () => {
 register("renderOverlay", () => {
   if (!config.m6Timer) return;
   if (split_t_start < 0) return;
+  let { x, y, scale } = data.m6Timer
 
   const nowT = (split_end >= 0 ? split_end : tickCount);
 
@@ -150,18 +175,13 @@ register("renderOverlay", () => {
   const sadanStr       = (split_sadan_start >= 0) ? fmtTicksDelta(split_sadan_start, totalEnd) : "—";
   const totalStr       = fmtTicksDelta(0, totalEnd);
 
-  const lines = [
-    `§6Terracottas: §f${terracottasStr}s`,
-    `§aGiants: §f${giantsStr}s`,
-    `§cSadan: §f${sadanStr}s`,
+  let timerText = new Text("", 0, 0).setShadow(true).setAlign("left").setFormatted(true)
+  let lines = 
+    `§6Terracottas: §f${terracottasStr}s\n`+
+    `§aGiants: §f${giantsStr}s\n`+
+    `§cSadan: §f${sadanStr}s\n`+
     `§dTotal: §f${totalStr}s`
-  ];
-
-  const x = Renderer.screen.getWidth() / 2 - 70;
-  const y = Renderer.screen.getHeight() / 2 - 35;
-  let dy = 0;
-  lines.forEach(line => {
-    Renderer.drawStringWithShadow(line, x, y + dy);
-    dy += 10;
-  });
+  timerText.setString(lines)
+  timerText.setScale(scale)
+  timerText.draw(x, y)
 });
