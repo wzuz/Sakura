@@ -18,12 +18,14 @@ let split_giants_start = -1; // Giants start
 let split_sadan_start = -1;  // Sadan start
 let split_end = -1;          // End (for Total)
 
-// NEW: Gyro bookkeeping (Terracottas only)
-const EXPECTED_ZONES = ["B", "A", "B", "A", "B"]; // Gyros 1..5 expected zones
-let gyroTimes  = [-1, -1, -1, -1, -1];            // tickCount at detection
-let gyroZones  = ["-", "-", "-", "-", "-"];       // "A"/"B"
+// Gyro bookkeeping (Terracottas only)
+let gyroTimes  = [-1, -1, -1, -1, -1];      // tickCount at detection
+let gyroZones  = ["-", "-", "-", "-", "-"]; // "A"/"B"
 
-// ================= GUI (HUD move) =================
+// Zone split
+const Z_SPLIT = 41.5
+
+// ===== GUI (HUD move) =====
 register("dragged", (dx, dy, x, y, bn) => {
   if (!config.m6TimerHudMover.isOpen() || bn == 2) return
   data.m6Timer.x = x
@@ -46,7 +48,7 @@ register("guiMouseClick", (x, y, bn) => {
   data.save()
 })
 
-// ================= Helpers =================
+// ===== Helpers =====
 function resetAll() {
   tickCount = 0;
   running = false;
@@ -59,11 +61,12 @@ function resetAll() {
   split_sadan_start = -1;
   split_end = -1;
 
-  // reset gyro state & locks
+  // reset gyro state & locks + pointers
   gyroTimes = [-1, -1, -1, -1, -1];
   gyroZones = ["-", "-", "-", "-", "-"];
   lockUntil.A = 0;
   lockUntil.B = 0;
+  nextOrdinal = 1; // reset global expected ordinal
 }
 
 function startTickCounter() {
@@ -85,14 +88,14 @@ register("tick", () => {
   if (running && split_end < 0) tickCount++;
 });
 
-// ticks delta → "ss.ss" (e.g., 12.80)
+// ticks delta → "ss.ss"
 function fmtTicksDelta(tStart, tEnd) {
   if (tStart < 0 || tEnd < 0) return "—";
   const dt = Math.max(0, tEnd - tStart);
   return (dt / 20).toFixed(2);
 }
 
-// ================= Chat hooks =================
+// ===== Chat hooks =====
 
 // Start: intro → start Terras & Total
 register("chat", (message) => {
@@ -133,7 +136,7 @@ register("chat", (message) => {
   }
 }).setChatCriteria("${message}");
 
-// Boss end (server “Defeated Sadan in …” line) (only while in boss)
+// Boss end
 register("chat", (message, event) => {
   if (!config.m6Timer || !running) return;
   if (event && event.sender) return; // server/system only
@@ -143,10 +146,15 @@ register("chat", (message, event) => {
     if (split_end < 0) split_end = tickCount;
 
     // compute all splits
-    const terracottasStr = fmtTicksDelta(split_t_start, split_giants_start >= 0 ? split_giants_start : (split_sadan_start >= 0 ? split_sadan_start : split_end));
-    const giantsStr      = (split_giants_start >= 0) ? fmtTicksDelta(split_giants_start, split_sadan_start >= 0 ? split_sadan_start : split_end) : (split_sadan_start >= 0 ? "0.00" : "—");
-    const sadanStr       = (split_sadan_start >= 0) ? fmtTicksDelta(split_sadan_start, split_end) : "—";
-    const totalStr       = fmtTicksDelta(0, split_end);
+    const terracottasStr = fmtTicksDelta(
+      split_t_start,
+      split_giants_start >= 0 ? split_giants_start : (split_sadan_start >= 0 ? split_sadan_start : split_end)
+    );
+    const giantsStr = (split_giants_start >= 0)
+      ? fmtTicksDelta(split_giants_start, split_sadan_start >= 0 ? split_sadan_start : split_end)
+      : (split_sadan_start >= 0 ? "0.00" : "—");
+    const sadanStr  = (split_sadan_start >= 0) ? fmtTicksDelta(split_sadan_start, split_end) : "—";
+    const totalStr  = fmtTicksDelta(0, split_end);
 
     setTimeout(() => {
       ChatLib.chat(`&5❀ &dSakura &5≫ &rTerracottas: &b${terracottasStr}s &r| Giants: &b${giantsStr}s &r| Sadan: &b${sadanStr}s &r| Total: &b${totalStr}s`);
@@ -162,14 +170,12 @@ register("chat", (message, event) => {
 
 // world unload → stop and reset
 register("worldUnload", () => {
-  if (running && split_end < 0) {
-    split_end = tickCount;
-  }
+  if (running && split_end < 0) split_end = tickCount;
   resetAll();
   ChatLib.chat("&7[Debug] M6 Timer reset (world unload)");
 });
 
-// ================= Overlay =================
+// ===== Overlay =====
 register("renderOverlay", () => {
   if (!config.m6Timer) return;
   if (split_t_start < 0) return;
@@ -190,7 +196,6 @@ register("renderOverlay", () => {
     const t = gyroTimes[i];
     const z = gyroZones[i];
     const s = (t >= 0) ? fmtTicksDelta(split_t_start, t) : "—";
-    // ordinal suffixes for display
     const suffix = ["st","nd","rd","th","th"][i] || "th"
     return `§d${i+1}${suffix} gyro: §f${s}s §7[${z}]`;
   }
@@ -211,7 +216,7 @@ register("renderOverlay", () => {
   timerText.draw(x, y)
 });
 
-// ===== Gyro =====
+// ===== Gyro detection =====
 const S2A = Java.type("net.minecraft.network.play.server.S2APacketParticles")
 
 const GYRO_SOUND    = "mob.endermen.portal"
@@ -219,7 +224,6 @@ const GYRO_PARTICLE = "spell_witch"
 
 const WINDOW_MS       = 160
 const SOUND_MIN_COUNT = 6
-const Z_SPLIT         = 41.5
 const CAST_LOCK_MS    = 2300   // per-zone lock duration
 
 let soundEvents = []   // {t,x,y,z}
@@ -238,24 +242,35 @@ function hasBurst(t) {
   return soundEvents.length >= SOUND_MIN_COUNT
 }
 
-// record into the next free gyro slot (Terracottas only)
+// === NEW: expected global order & pointer ===
+// Expected global order through Terras: 1=B, 2=A, 3=B, 4=A, 5=B
+const EXPECTED_ORDER = ["B", "A", "B", "A", "B"];
+let nextOrdinal = 1; // 1..6 (moves forward only)
+
+// record into the next matching ordinal ≥ nextOrdinal
 function recordGyro(x, y, z) {
   if (!running) return
   if (split_t_start < 0) return
   if (split_giants_start >= 0) return // only during Terras
 
-  const idx = gyroTimes.findIndex(v => v < 0)  // 0..4, or -1 if full
-  if (idx === -1) return
-
-  gyroTimes[idx] = tickCount
   const Z = zone(z)
+
+  // Find smallest ordinal >= nextOrdinal that expects this zone and is empty
+  let assignedOrd = -1
+  for (let ord = nextOrdinal; ord <= 5; ord++) {
+    if (EXPECTED_ORDER[ord - 1] === Z && gyroTimes[ord - 1] < 0) {
+      assignedOrd = ord
+      break
+    }
+  }
+  if (assignedOrd === -1) return
+
+  const idx = assignedOrd - 1
+  gyroTimes[idx] = tickCount
   gyroZones[idx] = Z
 
-  // Optional: sanity check vs expected zone sequence (comment out if unwanted)
-  const exp = EXPECTED_ZONES[idx]
-  if (exp && exp !== Z) {
-    ChatLib.chat(`&7[Debug] Gyro #${idx+1} zone mismatch: expected ${exp}, got ${Z}`)
-  }
+  // Advance pointer past the assigned ordinal
+  nextOrdinal = assignedOrd + 1
 }
 
 // fire helper (per-zone lock)
@@ -268,7 +283,7 @@ function tryFire(x, y, z) {
   // record split/zone
   recordGyro(x, y, z)
 
-  // Debug line for confirmation
+  // Debug confirm
   ChatLib.chat(`&d[DEBUG] Gyro @ &f${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)} &7[Zone ${Z}]`)
 }
 
