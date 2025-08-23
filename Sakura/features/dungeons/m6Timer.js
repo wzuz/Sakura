@@ -88,11 +88,13 @@ register("tick", () => {
   if (running && split_end < 0) tickCount++;
 });
 
-// ticks delta → "ss.ss"
+// ticks delta → seconds string rounded to 0.1s
 function fmtTicksDelta(tStart, tEnd) {
   if (tStart < 0 || tEnd < 0) return "—";
   const dt = Math.max(0, tEnd - tStart);
-  return (dt / 20).toFixed(2);
+  const secs = dt / 20;                       // 1 tick = 0.05s
+  const rounded = Math.round(secs * 100) / 100; // 0.01s resolution
+  return rounded.toFixed(2);
 }
 
 // ===== Chat hooks =====
@@ -152,7 +154,7 @@ register("chat", (message, event) => {
     );
     const giantsStr = (split_giants_start >= 0)
       ? fmtTicksDelta(split_giants_start, split_sadan_start >= 0 ? split_sadan_start : split_end)
-      : (split_sadan_start >= 0 ? "0.00" : "—");
+      : (split_sadan_start >= 0 ? "0.0" : "—");
     const sadanStr  = (split_sadan_start >= 0) ? fmtTicksDelta(split_sadan_start, split_end) : "—";
     const totalStr  = fmtTicksDelta(0, split_end);
 
@@ -188,16 +190,16 @@ register("renderOverlay", () => {
   const totalEnd  = nowT;
 
   const terracottasStr = fmtTicksDelta(split_t_start, terrasEnd);
-  const giantsStr      = (split_giants_start >= 0) ? fmtTicksDelta(split_giants_start, giantsEnd) : (split_sadan_start >= 0 ? "0.00" : "—");
+  const giantsStr      = (split_giants_start >= 0) ? fmtTicksDelta(split_giants_start, giantsEnd) : (split_sadan_start >= 0 ? "0.0" : "—");
   const sadanStr       = (split_sadan_start >= 0) ? fmtTicksDelta(split_sadan_start, totalEnd) : "—";
   const totalStr       = fmtTicksDelta(0, totalEnd);
 
   function gyroLine(i) {
     const t = gyroTimes[i];
-    const z = gyroZones[i];
     const s = (t >= 0) ? fmtTicksDelta(split_t_start, t) : "—";
     const suffix = ["st","nd","rd","th","th"][i] || "th"
-    return `§d${i+1}${suffix} gyro: §f${s}s §7[${z}]`;
+    // HUD: remove zone letter as requested
+    return `§d${i+1}${suffix} gyro: §f${s}s`;
   }
 
   let timerText = new Text("", 0, 0).setShadow(true).setAlign("left").setFormatted(true)
@@ -242,7 +244,7 @@ function hasBurst(t) {
   return soundEvents.length >= SOUND_MIN_COUNT
 }
 
-// === NEW: expected global order & pointer ===
+// === Expected global order & pointer ===
 // Expected global order through Terras: 1=B, 2=A, 3=B, 4=A, 5=B
 const EXPECTED_ORDER = ["B", "A", "B", "A", "B"];
 let nextOrdinal = 1; // 1..6 (moves forward only)
@@ -283,7 +285,7 @@ function tryFire(x, y, z) {
   // record split/zone
   recordGyro(x, y, z)
 
-  // Debug confirm
+  // Debug confirm (kept; HUD no longer shows zone)
   ChatLib.chat(`&d[DEBUG] Gyro @ &f${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)} &7[Zone ${Z}]`)
 }
 
