@@ -89,6 +89,7 @@ register("tick", () => {
 });
 
 // ticks delta → seconds string rounded to 0.1s
+// ticks delta → seconds string rounded to 0.01s
 function fmtTicksDelta(tStart, tEnd) {
   if (tStart < 0 || tEnd < 0) return "—";
   const dt = Math.max(0, tEnd - tStart);
@@ -106,8 +107,7 @@ register("chat", (message) => {
   if (M6_INTRO_REGEX.test(msg)) {
     resetAll();
     startTickCounter();
-    split_t_start = 0; // Terras start at tick 0
-    ChatLib.chat("&7[Debug] M6 Timer started — Terracottas & Total at 0");
+    split_t_start = 0;
   }
 }).setChatCriteria("${message}");
 
@@ -119,7 +119,7 @@ register("chat", (message) => {
     if (split_giants_start < 0) {
       split_giants_start = tickCount;
       const terrasStr = fmtTicksDelta(split_t_start, split_giants_start);
-      ChatLib.chat(`&7[Debug] Phase switch: Terracottas → Giants | Terracottas: &f${terrasStr}s`);
+      ChatLib.chat(`&6Terracottas&r: &b${terrasStr}s`);
     }
   }
 }).setChatCriteria("${message}");
@@ -133,7 +133,7 @@ register("chat", (message) => {
       if (split_giants_start < 0) split_giants_start = tickCount; // edge: 0-length giants
       split_sadan_start = tickCount;
       const giantsStr = fmtTicksDelta(split_giants_start, split_sadan_start);
-      ChatLib.chat(`&7[Debug] Phase switch: Giants → Sadan | Giants: &f${giantsStr}s`);
+      ChatLib.chat(`&aGiants&r: &b${giantsStr}s`);
     }
   }
 }).setChatCriteria("${message}");
@@ -159,7 +159,7 @@ register("chat", (message, event) => {
     const totalStr  = fmtTicksDelta(0, split_end);
 
     setTimeout(() => {
-      ChatLib.chat(`&5❀ &dSakura &5≫ &rTerracottas: &b${terracottasStr}s &r| Giants: &b${giantsStr}s &r| Sadan: &b${sadanStr}s &r| Total: &b${totalStr}s`);
+      ChatLib.chat(`&5❀ &dSakura &5≫&r &6Terracottas&r: &b${terracottasStr}s &r| &aGiants&r: &b${giantsStr}s &r| &cSadan&r: &b${sadanStr}s &r| &5Total&r: &b${totalStr}s`);
     }, 200);
 
     if (packetListener) {
