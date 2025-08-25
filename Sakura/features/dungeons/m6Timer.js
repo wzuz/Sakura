@@ -212,21 +212,31 @@ register("chat", (message, event) => {
   }
 }).setChatCriteria("${message}");
 
-// world unload → stop and reset
+// Only reset if the timer is/was active this run
 register("worldUnload", () => {
+  const timerLoaded =
+    running ||
+    split_t_start >= 0 ||
+    split_giants_start >= 0 ||
+    split_sadan_start >= 0 ||
+    gyroTimes.some(t => t >= 0);
+
+  if (!timerLoaded) return;
+
+  // If mid-run, close it out with current stamps
   if (running && split_end < 0) {
     split_end = tickCount;
     split_end_ms = nowMs();
   }
+
   resetAll();
-  ChatLib.chat("&7[Debug] M6 Timer reset (world unload)");
 });
 
 // ===== Overlay =====
 register("renderOverlay", () => {
   if (!config.m6Timer) return;
-  if (!isInBoss()) return;
-  if (split_t_start < 0) return;
+  if (!isInBoss() && !config.m6TimerHudMover.isOpen()) return;
+  if (split_t_start < 0 && !config.m6TimerHudMover.isOpen()) return;
   let { x, y, scale } = data.m6Timer
 
   const nowT  = (split_end >= 0 ? split_end : tickCount);
