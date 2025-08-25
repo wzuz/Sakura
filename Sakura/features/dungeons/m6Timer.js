@@ -12,18 +12,30 @@ let tickCount = 0;
 let packetListener = null;
 let running = false;
 
+// High-res, monotonic time (for real-time clock)
+const System = Java.type("java.lang.System")
+const nowMs = () => System.nanoTime() / 1e6
+
 // Split tick marks
 let split_t_start = -1;      // Terracottas start (0)
 let split_giants_start = -1; // Giants start
 let split_sadan_start = -1;  // Sadan start
 let split_end = -1;          // End (for Total)
 
+// Realtime (ms) split marks
+let start_ms = -1;
+let split_giants_start_ms = -1;
+let split_sadan_start_ms  = -1;
+let split_end_ms          = -1;
+
 // Gyro bookkeeping (Terracottas only)
 let gyroTimes  = [-1, -1, -1, -1, -1];      // tickCount at detection
 let gyroZones  = ["-", "-", "-", "-", "-"]; // "A"/"B"
+let gyroTimesMs = [-1, -1, -1, -1, -1];     // realtime ms stamps
 
 // Zone split
 const Z_SPLIT = 41.5
+const zone = z => (z >= Z_SPLIT ? "A" : "B")
 
 // ===== GUI (HUD move) =====
 register("dragged", (dx, dy, x, y, bn) => {
@@ -61,9 +73,16 @@ function resetAll() {
   split_sadan_start = -1;
   split_end = -1;
 
+  // realtime resets
+  start_ms = -1;
+  split_giants_start_ms = -1;
+  split_sadan_start_ms  = -1;
+  split_end_ms          = -1;
+
   // reset gyro state & locks + pointers
   gyroTimes = [-1, -1, -1, -1, -1];
   gyroZones = ["-", "-", "-", "-", "-"];
+  gyroTimesMs = [-1, -1, -1, -1, -1];
   lockUntil.A = 0;
   lockUntil.B = 0;
   nextOrdinal = 1; // reset global expected ordinal
@@ -88,14 +107,18 @@ register("tick", () => {
   if (running && split_end < 0) tickCount++;
 });
 
-// ticks delta → seconds string rounded to 0.1s
-// ticks delta → seconds string rounded to 0.01s
+// ticks delta → "ss.ss"
 function fmtTicksDelta(tStart, tEnd) {
   if (tStart < 0 || tEnd < 0) return "—";
   const dt = Math.max(0, tEnd - tStart);
-  const secs = dt / 20;                       // 1 tick = 0.05s
-  const rounded = Math.round(secs * 100) / 100; // 0.01s resolution
-  return rounded.toFixed(2);
+  return (dt / 20).toFixed(2);
+}
+
+// realtime delta → "ss.ss"
+function fmtMsDelta(startMs, endMs) {
+  if (startMs < 0 || endMs < 0) return "—";
+  const dt = Math.max(0, endMs - startMs);
+  return (dt / 1000).toFixed(2);
 }
 
 // ===== Chat hooks =====
@@ -108,6 +131,7 @@ register("chat", (message) => {
     resetAll();
     startTickCounter();
     split_t_start = 0;
+    start_ms = nowMs(); // start realtime clock
   }
 }).setChatCriteria("${message}");
 
@@ -118,8 +142,10 @@ register("chat", (message) => {
   if (M6_GIANTS_START_REGEX.test(msg)) {
     if (split_giants_start < 0) {
       split_giants_start = tickCount;
-      const terrasStr = fmtTicksDelta(split_t_start, split_giants_start);
-      ChatLib.chat(`&6Terracottas&r: &b${terrasStr}s`);
+      split_giants_start_ms = nowMs();
+      const terrasStr_tick = fmtTicksDelta(split_t_start, split_giants_start);
+      const terrasStr_rt   = fmtMsDelta(start_ms, split_giants_start_ms);
+      ChatLib.chat(`&6Terracottas&r: &b${terrasStr_rt}s &7(${terrasStr_tick})`);
     }
   }
 }).setChatCriteria("${message}");
@@ -130,10 +156,15 @@ register("chat", (message) => {
   const msg = message.trim();
   if (M6_SADAN_START_REGEX.test(msg)) {
     if (split_sadan_start < 0) {
-      if (split_giants_start < 0) split_giants_start = tickCount; // edge: 0-length giants
+      if (split_giants_start < 0) {
+        split_giants_start = tickCount;
+        split_giants_start_ms = nowMs();
+      }
       split_sadan_start = tickCount;
-      const giantsStr = fmtTicksDelta(split_giants_start, split_sadan_start);
-      ChatLib.chat(`&aGiants&r: &b${giantsStr}s`);
+      split_sadan_start_ms = nowMs();
+      const giantsStr_tick = fmtTicksDelta(split_giants_start, split_sadan_start);
+      const giantsStr_rt   = fmtMsDelta(split_giants_start_ms, split_sadan_start_ms);
+      ChatLib.chat(`&aGiants&r: &b${giantsStr_rt}s &7(${giantsStr_tick})`);
     }
   }
 }).setChatCriteria("${message}");
@@ -146,20 +177,30 @@ register("chat", (message, event) => {
   const msg = message.trim();
   if (M6_BOSS_END_PARTIAL.test(msg)) {
     if (split_end < 0) split_end = tickCount;
+    if (split_end_ms < 0) split_end_ms = nowMs();
 
-    // compute all splits
-    const terracottasStr = fmtTicksDelta(
-      split_t_start,
-      split_giants_start >= 0 ? split_giants_start : (split_sadan_start >= 0 ? split_sadan_start : split_end)
-    );
-    const giantsStr = (split_giants_start >= 0)
-      ? fmtTicksDelta(split_giants_start, split_sadan_start >= 0 ? split_sadan_start : split_end)
-      : (split_sadan_start >= 0 ? "0.0" : "—");
-    const sadanStr  = (split_sadan_start >= 0) ? fmtTicksDelta(split_sadan_start, split_end) : "—";
-    const totalStr  = fmtTicksDelta(0, split_end);
+    // compute all splits (tick and rt)
+    const terras_tick_end = (split_giants_start >= 0 ? split_giants_start : (split_sadan_start >= 0 ? split_sadan_start : split_end));
+    const giants_tick_end = (split_sadan_start >= 0 ? split_sadan_start : split_end);
+    const terracottasStr_tick = fmtTicksDelta(split_t_start, terras_tick_end);
+    const giantsStr_tick      = (split_giants_start >= 0) ? fmtTicksDelta(split_giants_start, giants_tick_end) : (split_sadan_start >= 0 ? "0.00" : "—");
+    const sadanStr_tick       = (split_sadan_start >= 0) ? fmtTicksDelta(split_sadan_start, split_end) : "—";
+    const totalStr_tick       = fmtTicksDelta(0, split_end);
+
+    const rt_now_end = split_end_ms;
+    const terras_rt_end = (split_giants_start_ms >= 0 ? split_giants_start_ms : (split_sadan_start_ms >= 0 ? split_sadan_start_ms : rt_now_end));
+    const giants_rt_end = (split_sadan_start_ms  >= 0 ? split_sadan_start_ms : rt_now_end);
+    const terracottasStr_rt = fmtMsDelta(start_ms, terras_rt_end);
+    const giantsStr_rt      = (split_giants_start_ms >= 0) ? fmtMsDelta(split_giants_start_ms, giants_rt_end) : (split_sadan_start_ms >= 0 ? "0.00" : "—");
+    const sadanStr_rt       = (split_sadan_start_ms >= 0) ? fmtMsDelta(split_sadan_start_ms, rt_now_end) : "—";
+    const totalStr_rt       = fmtMsDelta(start_ms, rt_now_end);
 
     setTimeout(() => {
-      ChatLib.chat(`&5❀ &dSakura &5≫&r &6Terracottas&r: &b${terracottasStr}s &r| &aGiants&r: &b${giantsStr}s &r| &cSadan&r: &b${sadanStr}s &r| &5Total&r: &b${totalStr}s`);
+      ChatLib.chat(`&5❀ &dSakura &5≫&r ` +
+        `&6Terracottas&r: &b${terracottasStr_rt}s &7(${terracottasStr_tick}) &r| ` +
+        `&aGiants&r: &b${giantsStr_rt}s &7(${giantsStr_tick}) &r| ` +
+        `&cSadan&r: &b${sadanStr_rt}s &7(${sadanStr_tick}) &r| ` +
+        `&5Total&r: &b${totalStr_rt}s &7(${totalStr_tick})`);
     }, 200);
 
     if (packetListener) {
@@ -172,7 +213,10 @@ register("chat", (message, event) => {
 
 // world unload → stop and reset
 register("worldUnload", () => {
-  if (running && split_end < 0) split_end = tickCount;
+  if (running && split_end < 0) {
+    split_end = tickCount;
+    split_end_ms = nowMs();
+  }
   resetAll();
   ChatLib.chat("&7[Debug] M6 Timer reset (world unload)");
 });
@@ -183,36 +227,47 @@ register("renderOverlay", () => {
   if (split_t_start < 0) return;
   let { x, y, scale } = data.m6Timer
 
-  const nowT = (split_end >= 0 ? split_end : tickCount);
+  const nowT  = (split_end >= 0 ? split_end : tickCount);
+  const nowRT = (split_end_ms >= 0 ? split_end_ms : nowMs());
 
-  const terrasEnd = (split_giants_start >= 0 ? split_giants_start : (split_sadan_start >= 0 ? split_sadan_start : nowT));
-  const giantsEnd = (split_sadan_start >= 0 ? split_sadan_start : nowT);
-  const totalEnd  = nowT;
+  const terrasTickEnd = (split_giants_start >= 0 ? split_giants_start : (split_sadan_start >= 0 ? split_sadan_start : nowT));
+  const giantsTickEnd = (split_sadan_start >= 0 ? split_sadan_start : nowT);
+  const totalTickEnd  = nowT;
 
-  const terracottasStr = fmtTicksDelta(split_t_start, terrasEnd);
-  const giantsStr      = (split_giants_start >= 0) ? fmtTicksDelta(split_giants_start, giantsEnd) : (split_sadan_start >= 0 ? "0.0" : "—");
-  const sadanStr       = (split_sadan_start >= 0) ? fmtTicksDelta(split_sadan_start, totalEnd) : "—";
-  const totalStr       = fmtTicksDelta(0, totalEnd);
+  const terrasRtEnd = (split_giants_start_ms >= 0 ? split_giants_start_ms : (split_sadan_start_ms >= 0 ? split_sadan_start_ms : nowRT));
+  const giantsRtEnd = (split_sadan_start_ms  >= 0 ? split_sadan_start_ms  : nowRT);
+  const totalRtEnd  = nowRT;
+
+  const terracottasStr_tick = fmtTicksDelta(split_t_start, terrasTickEnd);
+  const giantsStr_tick      = (split_giants_start >= 0) ? fmtTicksDelta(split_giants_start, giantsTickEnd) : (split_sadan_start >= 0 ? "0.00" : "—");
+  const sadanStr_tick       = (split_sadan_start >= 0) ? fmtTicksDelta(split_sadan_start, totalTickEnd) : "—";
+  const totalStr_tick       = fmtTicksDelta(0, totalTickEnd);
+
+  const terracottasStr_rt = fmtMsDelta(start_ms, terrasRtEnd);
+  const giantsStr_rt      = (split_giants_start_ms >= 0) ? fmtMsDelta(split_giants_start_ms, giantsRtEnd) : (split_sadan_start_ms >= 0 ? "0.00" : "—");
+  const sadanStr_rt       = (split_sadan_start_ms >= 0) ? fmtMsDelta(split_sadan_start_ms, totalRtEnd) : "—";
+  const totalStr_rt       = fmtMsDelta(start_ms, totalRtEnd);
 
   function gyroLine(i) {
-    const t = gyroTimes[i];
-    const s = (t >= 0) ? fmtTicksDelta(split_t_start, t) : "—";
+    const tTick = gyroTimes[i];
+    const tMs   = gyroTimesMs[i];
+    const sTick = (tTick >= 0) ? fmtTicksDelta(split_t_start, tTick) : "—";
+    const sRt   = (tMs   >= 0) ? fmtMsDelta(start_ms, tMs)         : "—";
     const suffix = ["st","nd","rd","th","th"][i] || "th"
-    // HUD: remove zone letter as requested
-    return `§d${i+1}${suffix} gyro: §f${s}s`;
+    return `§d${i+1}${suffix} gyro: §f${sRt}s §7(${sTick})`;
   }
 
   let timerText = new Text("", 0, 0).setShadow(true).setAlign("left").setFormatted(true)
   let lines =
-    `§6Terracottas: §f${terracottasStr}s\n`+
-    `§aGiants: §f${giantsStr}s\n`+
-    `§cSadan: §f${sadanStr}s\n`+
+    `§6Terracottas: §f${terracottasStr_rt}s §7(${terracottasStr_tick})\n`+
+    `§aGiants: §f${giantsStr_rt}s §7(${giantsStr_tick})\n`+
+    `§cSadan: §f${sadanStr_rt}s §7(${sadanStr_tick})\n`+
     `${gyroLine(0)}\n`+
     `${gyroLine(1)}\n`+
     `${gyroLine(2)}\n`+
     `${gyroLine(3)}\n`+
     `${gyroLine(4)}\n`+
-    `§5Total: §f${totalStr}s`
+    `§5Total: §f${totalStr_rt}s §7(${totalStr_tick})`
   timerText.setString(lines)
   timerText.setScale(scale)
   timerText.draw(x, y)
@@ -232,9 +287,6 @@ let soundEvents = []   // {t,x,y,z}
 let lastSpellTs = 0
 const lockUntil = { A: 0, B: 0 }
 
-const nowMs = () => Date.now()
-const zone = z => (z >= Z_SPLIT ? "A" : "B")
-
 function prune(t) {
   const cutoff = t - WINDOW_MS
   while (soundEvents.length && soundEvents[0].t < cutoff) soundEvents.shift()
@@ -244,7 +296,6 @@ function hasBurst(t) {
   return soundEvents.length >= SOUND_MIN_COUNT
 }
 
-// === Expected global order & pointer ===
 // Expected global order through Terras: 1=B, 2=A, 3=B, 4=A, 5=B
 const EXPECTED_ORDER = ["B", "A", "B", "A", "B"];
 let nextOrdinal = 1; // 1..6 (moves forward only)
@@ -270,6 +321,7 @@ function recordGyro(x, y, z) {
   const idx = assignedOrd - 1
   gyroTimes[idx] = tickCount
   gyroZones[idx] = Z
+  gyroTimesMs[idx] = nowMs() // realtime stamp for this gyro
 
   // Advance pointer past the assigned ordinal
   nextOrdinal = assignedOrd + 1
@@ -285,7 +337,7 @@ function tryFire(x, y, z) {
   // record split/zone
   recordGyro(x, y, z)
 
-  // Debug confirm (kept; HUD no longer shows zone)
+  // Debug confirm
   ChatLib.chat(`&d[DEBUG] Gyro @ &f${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)} &7[Zone ${Z}]`)
 }
 
