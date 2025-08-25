@@ -16,7 +16,7 @@ const bossEntryRegexes = [
     /^\[BOSS\] The Professor: I was burdened with terrible news recently\.\.\.$/,
     /^\[BOSS\] Thorn: Welcome Adventurers! I am Thorn, the Spirit! And host of the Vegan Trials!$/,
     /^\[BOSS\] Livid: Welcome, you've arrived right on time. I am Livid, the Master of Shadows\.$/,
-    /^\[BOSS\] Sadan: So you made it all the way here... Now you wish to defy me\? Sadan?!$/,
+    /^\[BOSS\] Sadan: So you made it all the way here\.\.\. Now you wish to defy me\? Sadan\?!$/,
     /^\[BOSS\] Maxor: WELL! WELL! WELL! LOOK WHO'S HERE!$/
 ];
 
