@@ -1,5 +1,6 @@
 import config from "../../config"
 import { data } from "../data"
+import { isInBoss } from "../utils/utils"
 
 // ================= Triggers (regex) =================
 const M6_INTRO_REGEX = /^\[BOSS\] Sadan: So you made it all the way here\.\.\. Now you wish to defy me\? Sadan\?!$/;
@@ -224,6 +225,7 @@ register("worldUnload", () => {
 // ===== Overlay =====
 register("renderOverlay", () => {
   if (!config.m6Timer) return;
+  if (!isInBoss()) return;
   if (split_t_start < 0) return;
   let { x, y, scale } = data.m6Timer
 
@@ -268,6 +270,12 @@ register("renderOverlay", () => {
     `${gyroLine(3)}\n`+
     `${gyroLine(4)}\n`+
     `§5Total: §f${totalStr_rt}s §7(${totalStr_tick})`
+  if (config.m6TimerHudMover.isOpen()) {
+          Renderer.drawRect(Renderer.GRAY, x-2, y-2, 140 * scale, 93 * scale)
+          timerText.setString(lines)
+          timerText.setScale(scale)
+          timerText.draw(x, y)
+          }
   timerText.setString(lines)
   timerText.setScale(scale)
   timerText.draw(x, y)
@@ -343,6 +351,7 @@ function tryFire(x, y, z) {
 
 // sounds
 register("soundPlay", (pos, name) => {
+  if (!isInBoss()) return;
   if (String(name) !== GYRO_SOUND) return
   const t = nowMs()
   const x = pos ? pos.getX() : Player.getX()
@@ -358,6 +367,7 @@ register("soundPlay", (pos, name) => {
 
 // particles
 register("packetReceived", (p) => {
+  if (!isInBoss()) return;
   if (!(p instanceof S2A)) return
   const type = p.func_179749_a().toString().toLowerCase()
   if (type !== GYRO_PARTICLE) return
