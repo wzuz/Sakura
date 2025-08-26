@@ -50,11 +50,21 @@ register("chat", (event) => {
     }
 })
 
-
 // Render HUDS
 register("renderOverlay", () => {
-    if (!config.masksTimerEnabled || !isInDungeon()) return
-    if (config.masksTimerinBoss && !isInBoss() && !config.maskHudMover.isOpen()) return
+  const moverOpen = (() => {
+    try { return !!config.maskHudMover && !!config.maskHudMover.isOpen && config.maskHudMover.isOpen(); }
+    catch (e) { return false; }
+  })();
+
+  if (
+    !moverOpen &&
+    (
+      !config.masksTimerEnabled ||
+      !isInDungeon() ||
+      (config.masksTimerinBoss && !isInBoss())
+    )
+  ) return;
 
     let { x, y, scale } = data.masksTimerPos
 

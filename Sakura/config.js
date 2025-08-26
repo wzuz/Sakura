@@ -113,7 +113,7 @@ class Config {
 
     @ButtonProperty({
         name: "Move Mask Timer HUD",
-        description: "Click to move the HUD (must be inside Dungeons).",
+        description: "Click to move the HUD.",
         category: "Dungeons",
         subcategory: "HUD",
         placeholder: "Move"
@@ -140,7 +140,7 @@ class Config {
 
     @ButtonProperty({
         name: "Move Sadan Splits HUD",
-        description: "Click to move the HUD (must be inside F6/M6 Boss).",
+        description: "Click to move the HUD.",
         category: "Dungeons",
         subcategory: "Sadan",
         placeholder: "Move"
