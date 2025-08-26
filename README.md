@@ -27,6 +27,7 @@
 - Blood Timer with drift & prediction accuracy
 - Announce Prince Kill
 - Rag Axe reminder for M5, M6, and M7
+- M6 Boss Splits & Gyro timers
 - Livid invincibility tick timer
 - Golem Shoutout
 - AutoMeow
