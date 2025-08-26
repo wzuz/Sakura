@@ -11,7 +11,7 @@ import {
     @SliderProperty
 } from '../Vigilance/index';
 
-@Vigilant("Sakura", "§dSakura §8v1.0.0", {
+@Vigilant("Sakura", "§dSakura §8v1.1.0", {
   getCategoryComparator: () => (a, b) => {
     const categories = ["Dungeons", "Extras",]
     return categories.indexOf(a) - categories.indexOf(b)
@@ -20,6 +20,7 @@ import {
 class Config {
 
     maskHudMover = new Gui()
+    m6TimerHudMover = new Gui()
 
    @SwitchProperty({
         name: "Sinseeker Timer",
@@ -95,14 +96,6 @@ class Config {
     lividTimer = false
 
     @SwitchProperty({
-        name: "Golem Shoutout",
-        description: "Gives a shoutout to whoever wakes up golems before terras in M6.",
-        category: "Dungeons",
-        subcategory: "Dungeons"
-    })
-    golemShoutout = false
-
-    @SwitchProperty({
         name: "Masks Timer",
         description: "Displays cooldowns for Bonzo's Mask, Spirit Mask, and Phoenix Pet.",
         category: "Dungeons",
@@ -120,13 +113,40 @@ class Config {
 
     @ButtonProperty({
         name: "Move Mask Timer HUD",
-        description: "Click to move the HUD (must be inside Dungeons).",
+        description: "Click to move the HUD.",
         category: "Dungeons",
         subcategory: "HUD",
         placeholder: "Move"
     })
     MoveMaskHud() {
         this.maskHudMover.open()
+    }
+
+    @SwitchProperty({
+        name: "Golem Shoutout",
+        description: "Gives a shoutout to whoever wakes up golems before terras in M6.",
+        category: "Dungeons",
+        subcategory: "Sadan"
+    })
+    golemShoutout = false
+
+    @SwitchProperty({
+        name: "Sadan Splits",
+        description: "Displays a HUD with Sadan splits for every phase in F6/M6 bossfight.",
+        category: "Dungeons",
+        subcategory: "Sadan"
+    })
+    m6Timer = false
+
+    @ButtonProperty({
+        name: "Move Sadan Splits HUD",
+        description: "Click to move the HUD.",
+        category: "Dungeons",
+        subcategory: "Sadan",
+        placeholder: "Move"
+    })
+    Movem6TimerHud() {
+        this.m6TimerHudMover.open()
     }
 
     @SwitchProperty({
@@ -167,5 +187,6 @@ class Config {
     this.addDependency("Only show in Boss","Masks Timer")
     }
 }
+
 
 export default new Config()
