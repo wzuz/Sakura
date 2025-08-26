@@ -13,26 +13,25 @@ let tickCount = 0;
 let packetListener = null;
 let running = false;
 
-// High-res, monotonic time (for real-time clock)
 const System = Java.type("java.lang.System")
 const nowMs = () => System.nanoTime() / 1e6
 
-// Split tick marks
+// Tick splits
 let split_t_start = -1;      // Terracottas start (0)
 let split_giants_start = -1; // Giants start
 let split_sadan_start = -1;  // Sadan start
-let split_end = -1;          // End (for Total)
+let split_end = -1;          // End
 
-// Realtime (ms) split marks
+// Real time splits (ms)
 let start_ms = -1;
 let split_giants_start_ms = -1;
 let split_sadan_start_ms  = -1;
 let split_end_ms          = -1;
 
-// Gyro bookkeeping (Terracottas only)
-let gyroTimes  = [-1, -1, -1, -1, -1];      // tickCount at detection
+// Terras Gyro bookkeeping
+let gyroTimes  = [-1, -1, -1, -1, -1];
 let gyroZones  = ["-", "-", "-", "-", "-"]; // "A"/"B"
-let gyroTimesMs = [-1, -1, -1, -1, -1];     // realtime ms stamps
+let gyroTimesMs = [-1, -1, -1, -1, -1];     // real time stamps
 
 // Zone split
 const Z_SPLIT = 41.5
@@ -74,26 +73,23 @@ function resetAll() {
   split_sadan_start = -1;
   split_end = -1;
 
-  // realtime resets
   start_ms = -1;
   split_giants_start_ms = -1;
   split_sadan_start_ms  = -1;
   split_end_ms          = -1;
 
-  // reset gyro state & locks + pointers
   gyroTimes = [-1, -1, -1, -1, -1];
   gyroZones = ["-", "-", "-", "-", "-"];
   gyroTimesMs = [-1, -1, -1, -1, -1];
   lockUntil.A = 0;
   lockUntil.B = 0;
-  nextOrdinal = 1; // reset global expected ordinal
+  nextOrdinal = 1;
 }
 
 function startTickCounter() {
   if (packetListener) return;
   tickCount = 0;
   running = true;
-  // Keep listener registered (no increment here; timing is from client tick)
   packetListener = register("packetReceived", () => {
     if (split_end >= 0) {
       try { packetListener.unregister(); } catch (e) {}
@@ -103,7 +99,7 @@ function startTickCounter() {
   }).setFilteredClass(Java.type("net.minecraft.network.play.server.S32PacketConfirmTransaction"));
 }
 
-// Tick fallback (≈20 per second, TPS-dependent)
+// Tick fallback
 register("tick", () => {
   if (running && split_end < 0) tickCount++;
 });
@@ -124,7 +120,7 @@ function fmtMsDelta(startMs, endMs) {
 
 // ===== Chat hooks =====
 
-// Start: intro → start Terras & Total
+// Start
 register("chat", (message) => {
   if (!config.m6Timer) return;
   const msg = message.trim();
@@ -132,7 +128,8 @@ register("chat", (message) => {
     resetAll();
     startTickCounter();
     split_t_start = 0;
-    start_ms = nowMs(); // start realtime clock
+    start_ms = nowMs();
+    registerGyroHandlers(); // start listeners
   }
 }).setChatCriteria("${message}");
 
@@ -148,6 +145,7 @@ register("chat", (message) => {
       const terrasStr_rt   = fmtMsDelta(start_ms, split_giants_start_ms);
       ChatLib.chat(`&6Terracottas&r: &b${terrasStr_rt}s &7(${terrasStr_tick})`);
     }
+    unregisterGyroHandlers(); // stop listeners
   }
 }).setChatCriteria("${message}");
 
@@ -173,14 +171,13 @@ register("chat", (message) => {
 // Boss end
 register("chat", (message, event) => {
   if (!config.m6Timer || !running) return;
-  if (event && event.sender) return; // server/system only
+  if (event && event.sender) return;
 
   const msg = message.trim();
   if (M6_BOSS_END_PARTIAL.test(msg)) {
     if (split_end < 0) split_end = tickCount;
     if (split_end_ms < 0) split_end_ms = nowMs();
 
-    // compute all splits (tick and rt)
     const terras_tick_end = (split_giants_start >= 0 ? split_giants_start : (split_sadan_start >= 0 ? split_sadan_start : split_end));
     const giants_tick_end = (split_sadan_start >= 0 ? split_sadan_start : split_end);
     const terracottasStr_tick = fmtTicksDelta(split_t_start, terras_tick_end);
@@ -204,6 +201,7 @@ register("chat", (message, event) => {
         `&5Total&r: &b${totalStr_rt}s &7(${totalStr_tick})`);
     }, 200);
 
+    unregisterGyroHandlers(); // clean up if still active
     if (packetListener) {
       try { packetListener.unregister(); } catch (e) {}
       packetListener = null;
@@ -212,7 +210,6 @@ register("chat", (message, event) => {
   }
 }).setChatCriteria("${message}");
 
-// Only reset if the timer is/was active this run
 register("worldUnload", () => {
   const timerLoaded =
     running ||
@@ -223,12 +220,12 @@ register("worldUnload", () => {
 
   if (!timerLoaded) return;
 
-  // If mid-run, close it out with current stamps
   if (running && split_end < 0) {
     split_end = tickCount;
     split_end_ms = nowMs();
   }
 
+  unregisterGyroHandlers();
   resetAll();
 });
 
@@ -281,17 +278,17 @@ register("renderOverlay", () => {
     `${gyroLine(4)}\n`+
     `§5Total: §f${totalStr_rt}s §7(${totalStr_tick})`
   if (config.m6TimerHudMover.isOpen()) {
-          Renderer.drawRect(Renderer.GRAY, x-2, y-2, 140 * scale, 93 * scale)
-          timerText.setString(lines)
-          timerText.setScale(scale)
-          timerText.draw(x, y)
-          }
+    Renderer.drawRect(Renderer.GRAY, x-2, y-2, 140 * scale, 93 * scale)
+    timerText.setString(lines)
+    timerText.setScale(scale)
+    timerText.draw(x, y)
+  }
   timerText.setString(lines)
   timerText.setScale(scale)
   timerText.draw(x, y)
 });
 
-// ===== Gyro detection =====
+// ===== Gyro detection (on-demand registration) =====
 const S2A = Java.type("net.minecraft.network.play.server.S2APacketParticles")
 
 const GYRO_SOUND    = "mob.endermen.portal"
@@ -301,9 +298,12 @@ const WINDOW_MS       = 160
 const SOUND_MIN_COUNT = 6
 const CAST_LOCK_MS    = 2300   // per-zone lock duration
 
-let soundEvents = []   // {t,x,y,z}
+let soundEvents = []
 let lastSpellTs = 0
 const lockUntil = { A: 0, B: 0 }
+
+let gyroSoundH = null
+let gyroPartH  = null
 
 function prune(t) {
   const cutoff = t - WINDOW_MS
@@ -314,19 +314,19 @@ function hasBurst(t) {
   return soundEvents.length >= SOUND_MIN_COUNT
 }
 
-// Expected global order through Terras: 1=B, 2=A, 3=B, 4=A, 5=B
+// Expected order through Terras: 1=B, 2=A, 3=B, 4=A, 5=B
 const EXPECTED_ORDER = ["B", "A", "B", "A", "B"];
-let nextOrdinal = 1; // 1..6 (moves forward only)
+let nextOrdinal = 1; // 1..6
 
-// record into the next matching ordinal ≥ nextOrdinal
+// next matching ordinal ≥ nextOrdinal
 function recordGyro(x, y, z) {
   if (!running) return
   if (split_t_start < 0) return
-  if (split_giants_start >= 0) return // only during Terras
+  if (split_giants_start >= 0) return
 
   const Z = zone(z)
 
-  // Find smallest ordinal >= nextOrdinal that expects this zone and is empty
+  // smallest ordinal >= nextOrdinal
   let assignedOrd = -1
   for (let ord = nextOrdinal; ord <= 5; ord++) {
     if (EXPECTED_ORDER[ord - 1] === Z && gyroTimes[ord - 1] < 0) {
@@ -339,53 +339,57 @@ function recordGyro(x, y, z) {
   const idx = assignedOrd - 1
   gyroTimes[idx] = tickCount
   gyroZones[idx] = Z
-  gyroTimesMs[idx] = nowMs() // realtime stamp for this gyro
+  gyroTimesMs[idx] = nowMs()
 
-  // Advance pointer past the assigned ordinal
   nextOrdinal = assignedOrd + 1
 }
 
-// fire helper (per-zone lock)
+// fire helper (per-zone)
 function tryFire(x, y, z) {
   const t = nowMs()
   const Z = zone(z)
   if (t < lockUntil[Z]) return
   lockUntil[Z] = t + CAST_LOCK_MS
 
-  // record split/zone
   recordGyro(x, y, z)
-
-  // Debug confirm
-  ChatLib.chat(`&d[DEBUG] Gyro @ &f${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)} &7[Zone ${Z}]`)
 }
 
-// sounds
-register("soundPlay", (pos, name) => {
-  if (!isInBoss()) return;
-  if (String(name) !== GYRO_SOUND) return
-  const t = nowMs()
-  const x = pos ? pos.getX() : Player.getX()
-  const y = pos ? pos.getY() : Player.getY()
-  const z = pos ? pos.getZ() : Player.getZ()
-  soundEvents.push({ t, x, y, z })
-  prune(t)
+function registerGyroHandlers() {
+  if (gyroSoundH || gyroPartH) return
 
-  if (t - lastSpellTs <= WINDOW_MS && hasBurst(t)) {
-    tryFire(x, y, z)
-  }
-})
+  // sound handler
+  gyroSoundH = register("soundPlay", (pos, name) => {
+    if (!isInBoss()) return
+    if (String(name) !== GYRO_SOUND) return
 
-// particles
-register("packetReceived", (p) => {
-  if (!isInBoss()) return;
-  if (!(p instanceof S2A)) return
-  const type = p.func_179749_a().toString().toLowerCase()
-  if (type !== GYRO_PARTICLE) return
+    const t = nowMs()
+    const x = pos ? pos.getX() : Player.getX()
+    const y = pos ? pos.getY() : Player.getY()
+    const z = pos ? pos.getZ() : Player.getZ()
+    soundEvents.push({ t, x, y, z })
+    prune(t)
 
-  const t = nowMs()
-  lastSpellTs = t
-  if (hasBurst(t)) {
-    const s = soundEvents[soundEvents.length - 1]
-    if (s) tryFire(s.x, s.y, s.z)
-  }
-})
+    if (t - lastSpellTs <= WINDOW_MS && hasBurst(t)) {
+      tryFire(x, y, z)
+    }
+  })
+
+  // particle handler
+  gyroPartH = register("packetReceived", (p) => {
+    if (!isInBoss()) return
+    const type = p.func_179749_a().toString().toLowerCase()
+    if (type !== GYRO_PARTICLE) return
+
+    const t = nowMs()
+    lastSpellTs = t
+    if (hasBurst(t)) {
+      const s = soundEvents[soundEvents.length - 1]
+      if (s) tryFire(s.x, s.y, s.z)
+    }
+  }).setFilteredClass(S2A)
+}
+
+function unregisterGyroHandlers() {
+  if (gyroSoundH) { try { gyroSoundH.unregister() } catch (e) {} gyroSoundH = null }
+  if (gyroPartH)  { try { gyroPartH.unregister()  } catch (e) {} gyroPartH  = null }
+}
